@@ -1,5 +1,8 @@
 from tkinter import *
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+from TkTreectrl import *
+from PIL import *
+
 import dict
 
 root = Tk()
@@ -123,8 +126,10 @@ ButtonFrame = Frame(PizzaFrame)
 ButtonFrame.grid(column=3, row=1)
 
 PizzaLabel = Label(text="Pizzas")
-
-PizzaList = Listbox(PizzaFrame, activestyle=None)
+PizzaList = Treectrl(PizzaFrame)
+PizzaList.column_create()
+PizzaList.column_create()
+PizzaList.column_create()
 PizzaList.grid(column=1, row=1, padx=(20,0), pady=(10,0), ipadx=20, sticky="ew")
 PizzaList.height = PizzaList.size()
 
@@ -134,14 +139,10 @@ PizzaList.height = PizzaList.size()
 #    if pizza_list_index = pizza_list:
 #        break
 
-OrderList = Listbox(PizzaFrame, activestyle=None)
-OrderList.grid(column=2, row=1, padx=(20,0), pady=(10,0), ipadx=20, sticky="ew")
-OrderList.height = OrderList.size()
-
 RemoveButton = Button(ButtonFrame, text="Remove")
-RemoveButton.grid(column=3, row=1, padx=20, pady=(10,0), sticky="ew")
+RemoveButton.grid(column=2, row=1, padx=20, pady=(10,0), sticky="ew")
 LoadButton = Button(ButtonFrame, text="Load", command=OpenFile)
-LoadButton.grid(column=3, row=2, padx=20, pady=(10,0), sticky="ew")
+LoadButton.grid(column=2, row=2, padx=20, pady=(10,0), sticky="ew")
 
 root.config(menu=menubar)
 root.mainloop()
