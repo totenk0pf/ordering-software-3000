@@ -1,5 +1,5 @@
-# ordering-software-3000
-## pizza ordering software that's supposed to give me 12 credits at the end of the year :pizza:
+# ORDERING SOFTWARE 3000
+## pizza ordering software that's supposed to give me 12 credits :pizza:
 
 ### **INSTRUCTIONS:**
 1. Download the [zip](https://github.com/totenk0pf/ordering-software-3000/archive/master.zip) and extract it.
