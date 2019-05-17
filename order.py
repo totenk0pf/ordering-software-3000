@@ -1,3 +1,7 @@
+# PIZZA ORDERING SOFTWARE
+# -- can I get 12 credits?
+# https://github.com/totenk0pf/ordering-software-3000
+
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox, simpledialog
@@ -9,7 +13,7 @@ import os
 root = Tk()
 root.resizable(False, False)
 
-# Dictionary
+# Defining a bunch of stuff
 firstname = ''
 lastname = ''
 phonein1 = ''
@@ -207,11 +211,19 @@ OrderList.item(RegularPizza, open=True)
 GourmetPizza = OrderList.insert("", 2, "GP", text="Gourmet Pizzas")
 OrderList.item(GourmetPizza, open=True)
 
+dynamicIID = 0
+
 def addPizza():
         AddPrompt = simpledialog.askinteger("Amount", "Enter the desired amount:")
         selectedItem = PizzaList.focus()
-        PizzaList.item(selectedItem)
-        OrderList.insert()
+        returnItem = PizzaList.item(selectedItem)
+        getItemName = returnItem.get('text')
+        global dynamicIID
+        if PizzaList.parent(selectedItem) == RegularPizza:
+                OrderList.insert(RegularPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
+        elif PizzaList.parent(selectedItem) == GourmetPizza:
+                OrderList.insert(GourmetPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
+        dynamicIID += 1
 
 AddButton = Button(ButtonFrame, text="Add", command=addPizza)
 AddButton.grid(column=1, row=1, padx=5, pady=(10,0), sticky="ew")
@@ -238,7 +250,7 @@ OptionsFrame.grid(column=1, row=6, ipadx=10, ipady=10, padx=(20,20), pady=(0,20)
 ConfirmButton = Button(OptionsFrame, text="Confirm order", command=confirmEntry)
 ConfirmButton.grid(column=1, row=1, ipadx=20, ipady=20, padx=20, pady=(10,0), sticky="nesw")
 ResetButton = Button(OptionsFrame, text="Reset order", command=resetEntry)
-ResetButton.grid(column=2, row=1, ipadx=20, ipady=20, padx=(0,20), pady=(10,0), sticky="nesw",)
+ResetButton.grid(column=2, row=1, ipadx=20, ipady=20, padx=(0,20), pady=(10,0), sticky="nesw")
 
 root.attributes("-topmost", True)
 root.config(menu=menubar)
