@@ -13,7 +13,7 @@ import os
 root = Tk()
 root.resizable(False, False)
 
-# Defining a bunch of stuff
+# Defining variables
 firstname = ''
 lastname = ''
 phonein1 = ''
@@ -21,7 +21,7 @@ phonein2 = ''
 phonein3 = ''
 address = ''
 
-# Defining process
+# Defining functions
 def OpenFile():
     name = askopenfilename(initialdir="C:/Users/Admin/Desktop",
                            filetypes =(("Text File", "*.txt"),("All Files","*.*")),
@@ -58,6 +58,13 @@ filemenu.add_command(label="Open", command=OpenFile)
 filemenu.add_command(label="Save", command=SaveFile)
 filemenu.add_command(label="Exit", command=root.quit)
 menubar.add_cascade(label="File", menu=filemenu)
+
+def openConfig():
+        ConfigWindow = Toplevel(root)
+
+optionmenu = Menu(menubar, tearoff=0)
+#optionmenu.add_command(Label="Configurations", command=openConfig)
+menubar.add_cascade(label="Options", menu=optionmenu)
 
 def openManual():
     os.system("start \"\" https://github.com/totenk0pf/ordering-software-3000/blob/master/README.md")
@@ -199,6 +206,12 @@ PizzaList.insert(GourmetPizza, "end", 'PT', text="Pizza that's been in a tomb fo
 PizzaList.insert(GourmetPizza, "end", 'RP', text="Rice Pizza", values=("$13.50"))
 PizzaList.grid(column=1, row=1, padx=(20,0), pady=(10,0), sticky="ew")
 
+TotalCost = 0
+
+TotalAmount = len(OrderList.get_children())
+for i in TotalAmount:
+        Total
+
 OrderList = ttk.Treeview(PizzaFrame, height=14)
 OrderList["columns"]=("one")
 OrderList.column("#0", width=150, minwidth=150, stretch=NO)
@@ -210,24 +223,51 @@ RegularPizza = OrderList.insert("", 1, "RGP", text="Regular Pizzas")
 OrderList.item(RegularPizza, open=True)
 GourmetPizza = OrderList.insert("", 2, "GP", text="Gourmet Pizzas")
 OrderList.item(GourmetPizza, open=True)
+TotalRow = OrderList.insert("", 3, "TT", text="Total cost:", values=(TotalCost))
 
 dynamicIID = 0
 
 def addPizza():
+        # DEPRECATED - MIGHT USE IN THE NEAR FUTURE
+        ''' New window - insert amount
+        AddWindow = Toplevel(root)
+        AddLabel = Label(AddWindow, text="Please input amount of pizzas:")
+        AddLabel.pack(padx=20, pady=10)
+        AddEntry = Entry(AddWindow, textvariable=phonein1, validate="key", validatecommand=(ncmd, '%S'))
+        AddEntry.pack(padx=20, pady=(0,10))
+        AddOK = Button(AddWindow, text="OK")
+        AddOK.pack(side=LEFT, padx=(20,0), pady=10, ipadx=20)
+        CancelButton = Button(AddWindow, text="Cancel", command=AddWindow.
+        CancelButton.pack(side=RIGHT, padx=(0,20), pady=10, ipadx=10)
+        AddWindow.resizable(FALSE, FALSE)
+        AddWindow.title("Amount")
+        AddWindow.lift(root) '''
+        # Add the selected pizza
         AddPrompt = simpledialog.askinteger("Amount", "Enter the desired amount:")
-        selectedItem = PizzaList.focus()
-        returnItem = PizzaList.item(selectedItem)
-        getItemName = returnItem.get('text')
+        if AddPrompt > 5:
+                WarnMsg = messagebox.showwarning("Invalid", "Maximum amount of pizzas allowed is 5.")
+        elif AddPrompt <= 5:
+                selectedItem = PizzaList.focus()
+                returnItem = PizzaList.item(selectedItem)
+                getItemName = returnItem.get('text')
+                global dynamicIID
+                if PizzaList.parent(selectedItem) == RegularPizza:
+                       OrderList.insert(RegularPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
+                elif PizzaList.parent(selectedItem) == GourmetPizza:
+                       OrderList.insert(GourmetPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
+                dynamicIID += 1
+
+def removePizza():
+        selectedOrderItem = OrderList.focus()
+        returnOrderItem = OrderList.item(selectedOrderItem)
+        getOrderItemName = returnOrderItem.get('text')
         global dynamicIID
-        if PizzaList.parent(selectedItem) == RegularPizza:
-                OrderList.insert(RegularPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
-        elif PizzaList.parent(selectedItem) == GourmetPizza:
-                OrderList.insert(GourmetPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
-        dynamicIID += 1
+        while getOrderItemName not in ["Regular Pizzas", "Gourmet Pizzas"]:
+                OrderList.delete(selectedOrderItem)
 
 AddButton = Button(ButtonFrame, text="Add", command=addPizza)
 AddButton.grid(column=1, row=1, padx=5, pady=(10,0), sticky="ew")
-RemoveButton = Button(ButtonFrame, text="Remove")
+RemoveButton = Button(ButtonFrame, text="Remove", command=removePizza)
 RemoveButton.grid(column=1, row=2, padx=5, pady=(10,0), sticky="ew")
 #LoadButton = Button(ButtonFrame, text="Load", command=OpenFile)
 #LoadButton.grid(column=1, row=3, padx=5, pady=(10,0), sticky="ew")
