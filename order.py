@@ -6,7 +6,6 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox, simpledialog
 from tkinter.filedialog import askopenfilename, asksaveasfilename
-from PIL import *
 
 import os
 
@@ -43,8 +42,6 @@ def SaveFile():
 def aboutDisplay():
     about = Toplevel(root)
     about.title('About')
-    pyzza = PhotoImage(file='pyzza.png')
-    showPyzza = Label(about, image=pyzza)
     showPyzza.grid(column=1, row=1)
     about.lift(root)
 
@@ -202,15 +199,11 @@ PizzaList.item(GourmetPizza, open=True)
 PizzaList.insert(GourmetPizza, "end", 'RHP', text="Ramadan Halal Pizza", values=("$13.50"))
 PizzaList.insert(GourmetPizza, "end", 'POP', text="Pineapple Only Pizza", values=("$13.50"))
 PizzaList.insert(GourmetPizza, "end", 'COP', text="Crust Only Pizza", values=("$13.50"))
-PizzaList.insert(GourmetPizza, "end", 'PT', text="Pizza that's been in a tomb for 1000 years", values=("$13.50"))
+PizzaList.insert(GourmetPizza, "end", 'PT', text="Cursed Pizza", values=("$13.50"))
 PizzaList.insert(GourmetPizza, "end", 'RP', text="Rice Pizza", values=("$13.50"))
 PizzaList.grid(column=1, row=1, padx=(20,0), pady=(10,0), sticky="ew")
 
 TotalCost = 0
-
-TotalAmount = len(OrderList.get_children())
-for i in TotalAmount:
-        Total
 
 OrderList = ttk.Treeview(PizzaFrame, height=14)
 OrderList["columns"]=("one")
@@ -223,6 +216,12 @@ RegularPizza = OrderList.insert("", 1, "RGP", text="Regular Pizzas")
 OrderList.item(RegularPizza, open=True)
 GourmetPizza = OrderList.insert("", 2, "GP", text="Gourmet Pizzas")
 OrderList.item(GourmetPizza, open=True)
+
+TotalAmount = 0
+
+def getTotalAmount():
+    TotalAmount = len(OrderList.get_children(RegularPizza)) + len(OrderList.get_children(GourmetPizza))
+
 TotalRow = OrderList.insert("", 3, "TT", text="Total cost:", values=(TotalCost))
 
 dynamicIID = 0
@@ -256,6 +255,10 @@ def addPizza():
                 elif PizzaList.parent(selectedItem) == GourmetPizza:
                        OrderList.insert(GourmetPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
                 dynamicIID += 1
+                getTotalAmount()
+                TotalCost = 8.5 * TotalAmount
+                print(TotalCost)
+                print(TotalAmount)
 
 def removePizza():
         selectedOrderItem = OrderList.focus()
