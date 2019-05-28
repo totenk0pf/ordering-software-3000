@@ -219,11 +219,11 @@ RegularPizza = OrderList.insert("", 1, "RGP", text="Regular Pizzas")
 OrderList.item(RegularPizza, open=True)
 GourmetPizza = OrderList.insert("", 2, "GP", text="Gourmet Pizzas")
 OrderList.item(GourmetPizza, open=True)
-TotalRow = OrderList.insert("", 3, "TT", text="Total cost:", values=(TotalCost))
+TotalRow = OrderList.insert("", 3, "TT", text="Total cost:", values=TotalCost)
 
-ListAmountRegular = []
-ListAmountGourmet = []
 TotalAmount = 0
+TotalAmountRegular = 0
+TotalAmountGourmet = 0
 
 dynamicIID = 0
 
@@ -243,51 +243,37 @@ def addPizza():
         AddWindow.title("Amount")
         AddWindow.lift(root) '''
         # Add the selected pizza
-        global ListAmountRegular
-        global ListAmountGourmet
         global TotalAmount
         global TotalCost
-        AddPrompt = simpledialog.askinteger("Amount", "Enter the desired amount:")
-        if AddPrompt > 5:
-                WarnMsg = messagebox.showwarning("Invalid", "Maximum amount of pizzas allowed is 5.")
-        if AddPrompt <= 5:
-                selectedItem = PizzaList.focus()
-                returnItem = PizzaList.item(selectedItem)
-                getItemName = returnItem.get('text')
-                global dynamicIID
-                if PizzaList.parent(selectedItem) == RegularPizza:
-                       OrderList.insert(RegularPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
-                elif PizzaList.parent(selectedItem) == GourmetPizza:
-                       OrderList.insert(GourmetPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
-                RegularList = OrderList.get_children(RegularPizza)
-                ''' DEPRECATED!
-                for i in range(len(RegularList)):
-                        GetRegularValue = (OrderList.item(i))["values"]
-                        if i < len(RegularList):
-                                i += 1
-                                ListAmountRegular += GetRegularValue
-                GourmetList = OrderList.get_children(GourmetPizza)
-                for i in range(len(GourmetList)):
-                        GetGourmetValue = (OrderList.item(i))["values"]
-                        if i < len(GourmetList):
-                                i += 1
-                                ListAmountGourmet += GetGourmetValue
-                '''
-                dynamicIID += 1
-        if not TotalAmount <= 5:
-                WarnMsg = messagebox.showwarning("Invalid", "Maximum amount of pizzas allowed is 5.")
-                
-def checkOrderList(): # Scans the order list for updates
-        global ListAmountRegular
-        global ListAmountGourmet
-        global TotalAmount
-        TotalAmountRegular = sum(ListAmountRegular)
-        TotalAmountGourmet = sum(ListAmountGourmet)
-        TotalAmount = TotalAmountGourmet + TotalAmountRegular
+        global TotalAmountRegular
+        global TotalAmountGourmet
+        selectedItem = PizzaList.focus()
+        returnItem = PizzaList.item(selectedItem)
+        getItemName = returnItem.get('text')
+        global dynamicIID
+        while TotalAmount <= 4:
+            if PizzaList.parent(selectedItem) == RegularPizza:
+                    OrderList.insert(RegularPizza, "end", dynamicIID, text=getItemName, values=1)
+                    TotalAmountRegular += 1
+                    break
+            elif PizzaList.parent(selectedItem) == GourmetPizza:
+                    OrderList.insert(GourmetPizza, "end", dynamicIID, text=getItemName, values=1)
+                    TotalAmountGourmet += 1
+                    break
+        TotalAmount = TotalAmountRegular + TotalAmountGourmet
         TotalCost = (TotalAmountRegular * 8.50) + (TotalAmountGourmet * 13.50)
+        dynamicIID += 1
+        OrderList.set(TotalRow, column="one", value=TotalCost)
+        if TotalAmount > 4:
+            WarnMsg = messagebox.showwarning("Invalid", "Maximum amount of pizzas allowed is 5.")
+
+RegularList = OrderList.get_children(RegularPizza)
+GourmetList = OrderList.get_children(GourmetPizza)
+        
+def checkOrderList(): # Scans the order list for update
+        global TotalAmount
+        global TotalCost
         print(TotalAmount, TotalCost)
-        print('List amount regular:', ListAmountRegular)
-        print('List amount gourmet:', ListAmountGourmet)
         print('Total amount gourmet:', TotalAmountGourmet)
         print('Total amount regular:', TotalAmountRegular)
         print('Total amount:', TotalAmount)
@@ -299,10 +285,15 @@ def removePizza():
         selectedOrderItem = OrderList.focus()
         returnOrderItem = OrderList.item(selectedOrderItem)
         getOrderItemName = returnOrderItem.get('text')
+        global TotalCost
         global dynamicIID
         while getOrderItemName not in ["Regular Pizzas", "Gourmet Pizzas"]:
-                OrderList.delete(selectedOrderItem)
-
+                if getOrderItemName in ["Regular Pizzas"]:
+                    OrderList.delete(selectedOrderItem)
+                    TotalCost = TotalCost - 8.5
+                elif getOrderItemName in ["Gourmet Pizzas"]:
+                    OrderList.delete(selectedOrderItem)
+                    TotalCost = TotalCost - 13.5
 AddButton = Button(ButtonFrame, text="Add", command=addPizza)
 AddButton.grid(column=1, row=1, padx=5, pady=(10,0), sticky="ew")
 RemoveButton = Button(ButtonFrame, text="Remove", command=removePizza)
@@ -323,7 +314,10 @@ def resetEntry():
 def confirmEntry():
     ConfirmPrompt = messagebox.askyesno("Confirm", "Do you wish to confirm the order?")
     if ConfirmPrompt == True:
-            print('Something')
+            PrintWindow = Toplevel(root)
+            PrintWindow.title("Your order")
+            PrintLabel = Label(PrintWindow)
+            PrintWindow.lift(root)
 
 OptionsFrame = LabelFrame(root, text="Options")
 OptionsFrame.grid(column=1, row=6, ipadx=10, ipady=10, padx=(20,20), pady=(0,20), sticky="ew")
