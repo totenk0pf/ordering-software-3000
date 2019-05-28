@@ -8,6 +8,7 @@ from tkinter import messagebox, simpledialog
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import os
+import json
 
 root = Tk()
 root.resizable(False, False)
@@ -220,22 +221,11 @@ GourmetPizza = OrderList.insert("", 2, "GP", text="Gourmet Pizzas")
 OrderList.item(GourmetPizza, open=True)
 TotalRow = OrderList.insert("", 3, "TT", text="Total cost:", values=(TotalCost))
 
-TotalAmountRegular = 0
-TotalAmountGourmet = 0
+ListAmountRegular = []
+ListAmountGourmet = []
 TotalAmount = 0
 
-def checkOrderList(): # Scans the order list for updates
-        global TotalAmountRegular
-        global TotalAmountGourmet
-        global TotalAmount
-        root.after(2000, checkOrderList)  # Loop every 2 seconds
-        TotalAmountRegular = OrderList.item(RegularPizza, "values")
-        TotalAmountGourmet = OrderList.item(GourmetPizza, "values")
-        print(TotalAmountRegular, TotalAmountGourmet)
-        #TotalAmount = TotalAmountGourmet + TotalAmountRegular
-root.after(2000, checkOrderList)
-
-dynamicIID = 1
+dynamicIID = 0
 
 def addPizza():
         # DEPRECATED - MIGHT USE IN THE NEAR FUTURE
@@ -253,8 +243,8 @@ def addPizza():
         AddWindow.title("Amount")
         AddWindow.lift(root) '''
         # Add the selected pizza
-        global TotalAmountRegular
-        global TotalAmountGourmet
+        global ListAmountRegular
+        global ListAmountGourmet
         global TotalAmount
         global TotalCost
         AddPrompt = simpledialog.askinteger("Amount", "Enter the desired amount:")
@@ -269,13 +259,41 @@ def addPizza():
                        OrderList.insert(RegularPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
                 elif PizzaList.parent(selectedItem) == GourmetPizza:
                        OrderList.insert(GourmetPizza, "end", dynamicIID, text=getItemName, values=AddPrompt)
+                RegularList = OrderList.get_children(RegularPizza)
+                ''' DEPRECATED!
+                for i in range(len(RegularList)):
+                        GetRegularValue = (OrderList.item(i))["values"]
+                        if i < len(RegularList):
+                                i += 1
+                                ListAmountRegular += GetRegularValue
+                GourmetList = OrderList.get_children(GourmetPizza)
+                for i in range(len(GourmetList)):
+                        GetGourmetValue = (OrderList.item(i))["values"]
+                        if i < len(GourmetList):
+                                i += 1
+                                ListAmountGourmet += GetGourmetValue
+                '''
                 dynamicIID += 1
-                #TotalCost = (TotalAmountRegular * 8.50) + (TotalAmountGourmet * 13.50)
-                print(TotalAmount, TotalCost)
-                print(TotalAmountRegular, TotalAmountGourmet)
-        #if TotalAmount > 5:
-                #WarnMsg = messagebox.showwarning("Invalid", "Maximum amount of pizzas allowed is 5.")
+        if not TotalAmount <= 5:
+                WarnMsg = messagebox.showwarning("Invalid", "Maximum amount of pizzas allowed is 5.")
                 
+def checkOrderList(): # Scans the order list for updates
+        global ListAmountRegular
+        global ListAmountGourmet
+        global TotalAmount
+        TotalAmountRegular = sum(ListAmountRegular)
+        TotalAmountGourmet = sum(ListAmountGourmet)
+        TotalAmount = TotalAmountGourmet + TotalAmountRegular
+        TotalCost = (TotalAmountRegular * 8.50) + (TotalAmountGourmet * 13.50)
+        print(TotalAmount, TotalCost)
+        print('List amount regular:', ListAmountRegular)
+        print('List amount gourmet:', ListAmountGourmet)
+        print('Total amount gourmet:', TotalAmountGourmet)
+        print('Total amount regular:', TotalAmountRegular)
+        print('Total amount:', TotalAmount)
+        print('Total cost:', TotalCost)
+        root.after(2000, checkOrderList)  # Loop every 2 seconds
+root.after(2000, checkOrderList)
 
 def removePizza():
         selectedOrderItem = OrderList.focus()
@@ -304,6 +322,8 @@ def resetEntry():
 
 def confirmEntry():
     ConfirmPrompt = messagebox.askyesno("Confirm", "Do you wish to confirm the order?")
+    if ConfirmPrompt == True:
+            print('Something')
 
 OptionsFrame = LabelFrame(root, text="Options")
 OptionsFrame.grid(column=1, row=6, ipadx=10, ipady=10, padx=(20,20), pady=(0,20), sticky="ew")
