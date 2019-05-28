@@ -285,10 +285,15 @@ def removePizza():
         selectedOrderItem = OrderList.focus()
         returnOrderItem = OrderList.item(selectedOrderItem)
         getOrderItemName = returnOrderItem.get('text')
+        global TotalCost
         global dynamicIID
         while getOrderItemName not in ["Regular Pizzas", "Gourmet Pizzas"]:
-                OrderList.delete(selectedOrderItem)
-
+                if getOrderItemName in ["Regular Pizzas"]:
+                    OrderList.delete(selectedOrderItem)
+                    TotalCost = TotalCost - 8.5
+                elif getOrderItemName in ["Gourmet Pizzas"]:
+                    OrderList.delete(selectedOrderItem)
+                    TotalCost = TotalCost - 13.5
 AddButton = Button(ButtonFrame, text="Add", command=addPizza)
 AddButton.grid(column=1, row=1, padx=5, pady=(10,0), sticky="ew")
 RemoveButton = Button(ButtonFrame, text="Remove", command=removePizza)
@@ -309,7 +314,10 @@ def resetEntry():
 def confirmEntry():
     ConfirmPrompt = messagebox.askyesno("Confirm", "Do you wish to confirm the order?")
     if ConfirmPrompt == True:
-            print('Something')
+            PrintWindow = Toplevel(root)
+            PrintWindow.title("Your order")
+            PrintLabel = Label(PrintWindow)
+            PrintWindow.lift(root)
 
 OptionsFrame = LabelFrame(root, text="Options")
 OptionsFrame.grid(column=1, row=6, ipadx=10, ipady=10, padx=(20,20), pady=(0,20), sticky="ew")
