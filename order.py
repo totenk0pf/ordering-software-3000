@@ -63,7 +63,7 @@ def openConfig():
         ConfigWindow = Toplevel(root)
 
 optionmenu = Menu(menubar, tearoff=0)
-#optionmenu.add_command(Label="Configurations", command=openConfig)
+optionmenu.add_command(label="Configurations", command=openConfig)
 menubar.add_cascade(label="Options", menu=optionmenu)
 
 def openManual():
@@ -227,6 +227,10 @@ TotalAmountGourmet = 0
 
 dynamicIID = 0
 
+def calcTotalCost():
+        global TotalCost
+        TotalCost = (TotalAmountRegular * 8.50) + (TotalAmountGourmet * 13.50)
+
 def addPizza():
         # DEPRECATED - MIGHT USE IN THE NEAR FUTURE
         ''' New window - insert amount
@@ -247,37 +251,33 @@ def addPizza():
         global TotalCost
         global TotalAmountRegular
         global TotalAmountGourmet
+        global dynamicIID
         selectedItem = PizzaList.focus()
         returnItem = PizzaList.item(selectedItem)
         getItemName = returnItem.get('text')
-        global dynamicIID
-        while TotalAmount <= 4:
-            if PizzaList.parent(selectedItem) == RegularPizza:
-                    OrderList.insert(RegularPizza, "end", dynamicIID, text=getItemName, values=1)
-                    TotalAmountRegular += 1
-                    break
-            elif PizzaList.parent(selectedItem) == GourmetPizza:
-                    OrderList.insert(GourmetPizza, "end", dynamicIID, text=getItemName, values=1)
-                    TotalAmountGourmet += 1
-                    break
-        TotalAmount = TotalAmountRegular + TotalAmountGourmet
-        TotalCost = (TotalAmountRegular * 8.50) + (TotalAmountGourmet * 13.50)
+        if TotalAmount <= 4:
+                while getItemName not in ["Regular Pizzas","Gourmet Pizzas"]:
+                        if PizzaList.parent(selectedItem) == RegularPizza:
+                                OrderList.insert(RegularPizza, "end", dynamicIID, text=getItemName, values=1)
+                                TotalAmountRegular += 1
+                                break
+                        elif PizzaList.parent(selectedItem) == GourmetPizza:
+                                OrderList.insert(GourmetPizza, "end", dynamicIID, text=getItemName, values=1)
+                                TotalAmountGourmet += 1
+                                break
+                TotalAmount = TotalAmountRegular + TotalAmountGourmet
         dynamicIID += 1
+        calcTotalCost()
         OrderList.set(TotalRow, column="one", value=TotalCost)
         if TotalAmount > 4:
             WarnMsg = messagebox.showwarning("Invalid", "Maximum amount of pizzas allowed is 5.")
+        print(dynamicIID)
+        
 
 RegularList = OrderList.get_children(RegularPizza)
 GourmetList = OrderList.get_children(GourmetPizza)
         
 def checkOrderList(): # Scans the order list for update
-        global TotalAmount
-        global TotalCost
-        print(TotalAmount, TotalCost)
-        print('Total amount gourmet:', TotalAmountGourmet)
-        print('Total amount regular:', TotalAmountRegular)
-        print('Total amount:', TotalAmount)
-        print('Total cost:', TotalCost)
         root.after(2000, checkOrderList)  # Loop every 2 seconds
 root.after(2000, checkOrderList)
 
@@ -286,14 +286,25 @@ def removePizza():
         returnOrderItem = OrderList.item(selectedOrderItem)
         getOrderItemName = returnOrderItem.get('text')
         global TotalCost
+        global TotalAmount
         global dynamicIID
-        while getOrderItemName not in ["Regular Pizzas", "Gourmet Pizzas"]:
-                if getOrderItemName in ["Regular Pizzas"]:
-                    OrderList.delete(selectedOrderItem)
-                    TotalCost = TotalCost - 8.5
-                elif getOrderItemName in ["Gourmet Pizzas"]:
-                    OrderList.delete(selectedOrderItem)
-                    TotalCost = TotalCost - 13.5
+        global TotalAmountRegular
+        global TotalAmountGourmet
+        if getOrderItemName not in ["Regular Pizzas", "Gourmet Pizzas"]:
+                if OrderList.parent(selectedOrderItem) == "RGP":
+                        OrderList.delete(selectedOrderItem)
+                        TotalCost -= 8.5
+                        TotalAmountRegular -= 1
+                elif OrderList.parent(selectedOrderItem) == "GP":
+                        OrderList.delete(selectedOrderItem)
+                        TotalCost -= 13.5
+                        TotalAmountGourmet -= 1
+                TotalAmount = TotalAmountRegular + TotalAmountGourmet
+                calcTotalCost()
+                OrderList.set(TotalRow, column="one", value=TotalCost)
+        dynamicIID -= 1
+        print(dynamicIID)
+
 AddButton = Button(ButtonFrame, text="Add", command=addPizza)
 AddButton.grid(column=1, row=1, padx=5, pady=(10,0), sticky="ew")
 RemoveButton = Button(ButtonFrame, text="Remove", command=removePizza)
@@ -302,22 +313,95 @@ RemoveButton.grid(column=1, row=2, padx=5, pady=(10,0), sticky="ew")
 #LoadButton.grid(column=1, row=3, padx=5, pady=(10,0), sticky="ew")
 
 def resetEntry():
-    ResetPrompt = messagebox.askyesno("Reset", "Are you sure you want to reset the customer's information?")
-    if ResetPrompt == True:
-        FirstNameInput.delete(0, 'end')
-        LastNameInput.delete(0, 'end')
-        PhoneInput1.delete(0, 'end')
-        PhoneInput2.delete(0, 'end')
-        PhoneInput3.delete(0, 'end')
-        DeliveryEntry.delete(0, 'end')
+        global TotalAmountRegular
+        global TotalAmountGourmet
+        global TotalAmount
+        ResetPrompt = messagebox.askyesno("Reset", "Are you sure you want to reset the customer's information?")
+        if ResetPrompt == True:
+                FirstNameInput.delete(0, 'end')
+                LastNameInput.delete(0, 'end')
+                PhoneInput1.delete(0, 'end')
+                PhoneInput2.delete(0, 'end')
+                PhoneInput3.delete(0, 'end')
+                DeliveryEntry.delete(0, 'end')
+                for i in OrderList.get_children(RegularPizza):
+                        OrderList.delete(i)
+                        TotalAmountRegular = 0
+                for i in OrderList.get_children(GourmetPizza):
+                        OrderList.delete(i)
+                        TotalAmountGourmet = 0
+                TotalAmount = TotalAmountRegular + TotalAmountGourmet
+        calcTotalCost()
+        OrderList.set(TotalRow, column="one", value=TotalCost)
 
 def confirmEntry():
-    ConfirmPrompt = messagebox.askyesno("Confirm", "Do you wish to confirm the order?")
-    if ConfirmPrompt == True:
-            PrintWindow = Toplevel(root)
-            PrintWindow.title("Your order")
-            PrintLabel = Label(PrintWindow)
-            PrintWindow.lift(root)
+        global dynamicIID
+        ConfirmPrompt = messagebox.askyesno("Confirm", "Do you wish to confirm the order?")
+        if ConfirmPrompt == True:
+                PrintWindow = Toplevel(root)
+                PrintWindow.title("Your order")
+                PrintWindow.resizable(False, False)
+                # Customer's details frame
+                CustomerFrame = LabelFrame(PrintWindow, text="Customer's details")
+                CustomerFrame.grid(column=1, row=1, ipadx=10, ipady=10, padx=(20), pady=(10,5), sticky="ew")
+                # Print the customer's details
+                custName = FirstNameInput.get() + " " + LastNameInput.get()
+                NameLabel = Label(CustomerFrame, text="Customer's name:")
+                NameLabel.grid(column=1, row=1, padx=(20,10), pady=(15,5))
+                CustomerName = Label(CustomerFrame, text=custName)
+                CustomerName.grid(column=2, row=1, padx=(10), pady=(15,5))
+                PhoneLabel = Label(CustomerFrame, text="Phone number:")
+                PhoneLabel.grid(column=1, row=2, padx=(20,10), pady=5, sticky="ew")
+                phoneNum = PhoneInput1.get() + "" + PhoneInput2.get() + "" + PhoneInput3.get()
+                PhoneNumber = Label(CustomerFrame, text=phoneNum)
+                PhoneNumber.grid(column=2, row=2, padx=(10), pady=(5))
+                DPLabel = Label(CustomerFrame, text="Delivery/Pickup:")
+                DPLabel.grid(column=1, row=3, padx=(20,10), pady=5)
+                dpOption = ""
+                DeliveryAddress = Label(CustomerFrame, text="Customer's address:")
+                DeliveryAddress.grid(column=1, row=4, padx=(20,10), pady=5, sticky="ew")
+                Address = Label(CustomerFrame, text=DeliveryEntry.get())
+                Address.grid(column=2, row=4, padx=(10), pady=5, sticky="ew")
+        if dpCheck.get() == 1:
+                dpOption = "Delivery"
+        elif dpCheck.get() == 0:
+                dpOption = "Pickup"
+                DeliveryAddress.grid_remove()
+                Address.grid_remove()
+        DeliveryOpt = Label(CustomerFrame, text=dpOption)
+        DeliveryOpt.grid(column=2, row=3, padx=(10), pady=(5))
+        # Pizza list's frame
+        PizzaFrame = LabelFrame(PrintWindow, text="Order")
+        PizzaFrame.grid(column=1, row=4, ipadx=10, ipady=10, padx=(20,20), pady=(0,5), sticky="ew")
+        PrintList = ttk.Treeview(PizzaFrame, height=14)
+        PrintList["columns"]=("one")
+        PrintList.column("#0", width=150, minwidth=150, stretch=NO)
+        PrintList.column("one", width=50, minwidth=50, stretch=NO)
+        PrintList.heading("#0", text="Name", anchor="w")
+        PrintList.heading("one", text="Amount", anchor="w")
+        PrintList.grid(column=1, row=5, padx=(20,0), pady=(10,0), sticky="ew")
+        RegularPizza = PrintList.insert("", 1, "RGP", text="Regular Pizzas")
+        PrintList.item(RegularPizza, open=True)
+        GourmetPizza = PrintList.insert("", 2, "GP", text="Gourmet Pizzas")
+        PrintList.item(GourmetPizza, open=True)
+        TotalRow = PrintList.insert("", 3, "TT", text="Total cost:", values=TotalCost)
+        # Parse the items from the order list
+        selectedItem = OrderList.focus()
+        returnItem = OrderList.item(selectedItem)
+        getItemName = returnItem.get('text')
+        selectNext
+        for i in OrderList.get_children(RegularPizza):
+                PrintList.insert(RegularPizza, "end", dynamicIID, text=returnNextName, values=1)
+                dynamicIID += 1
+        # Buttons' frame
+        ButtonFrame = Frame(PrintWindow)
+        ButtonFrame.grid(column=1, row=5, padx=(20), pady=(0,20))
+        ConfirmButton = Button(ButtonFrame, text="Confirm order", command=confirmEntry)
+        ConfirmButton.grid(column=1, row=1, ipadx=20, ipady=20, padx=(0,20), pady=(10,0), sticky="nesw")
+        ResetButton = Button(ButtonFrame, text="Reset order", command=PrintWindow.destroy)
+        ResetButton.grid(column=2, row=1, ipadx=20, ipady=20, padx=(0), pady=(10,0), sticky="nesw")
+        PrintLabel = Label(PrintWindow)
+        PrintWindow.lift(root)
 
 OptionsFrame = LabelFrame(root, text="Options")
 OptionsFrame.grid(column=1, row=6, ipadx=10, ipady=10, padx=(20,20), pady=(0,20), sticky="ew")
@@ -325,6 +409,8 @@ ConfirmButton = Button(OptionsFrame, text="Confirm order", command=confirmEntry)
 ConfirmButton.grid(column=1, row=1, ipadx=20, ipady=20, padx=20, pady=(10,0), sticky="nesw")
 ResetButton = Button(OptionsFrame, text="Reset order", command=resetEntry)
 ResetButton.grid(column=2, row=1, ipadx=20, ipady=20, padx=(0,20), pady=(10,0), sticky="nesw")
+ExitButton = Button(OptionsFrame, text="Exit program", command=root.quit)
+ExitButton.grid(column=3, row=1, ipadx=20, ipady=20, padx=(0,20), pady=(10,0), sticky="nesw")
 
 root.attributes("-topmost", True)
 root.config(menu=menubar)
