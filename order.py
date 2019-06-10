@@ -18,8 +18,6 @@ root.resizable(False, False)
 firstname = StringVar()
 lastname = StringVar()
 phonein1 = ''
-phonein2 = ''
-phonein3 = ''
 address = ''
 
 # Defining functions
@@ -122,11 +120,6 @@ PhoneInput = Entry(CustomerFrame, textvariable=phonein1, validate="key", validat
 PhoneInput.grid(column=2, columnspan=2, row=2, padx=(0,10), pady=5, sticky="ew")
 
 # Phone number input's validation
-def phone1Limit(PhoneInput):
-        if len(phonein1.get()) >= 9:
-                phonein1.set(phonein1.get()[:9])
-                DeliveryEntry.focus()
-
 def fnameLimit(FirstNameInput):
         if len(firstname.get()) >= 10:
                 firstname.set(firstname.get()[:10])
@@ -137,9 +130,14 @@ def lnameLimit(LastNameInput):
                 lastname.set(lastname.get()[:10])
                 PhoneInput.focus()
 
-phonein1.trace('w', lambda *args:phone1Limit(PhoneInput))
+def phone1Limit(PhoneInput):
+        if len(phonein1.get()) >= 9:
+                phonein1.set(phonein1.get()[:9])
+                DeliveryEntry.focus()
+
 firstname.trace('w', lambda *args:fnameLimit(FirstNameInput))
 lastname.trace('w', lambda *args:lnameLimit(LastNameInput))
+phonein1.trace('w', lambda *args:phone1Limit(PhoneInput))
 
 # Delivery/Pickup
 dpCheck = IntVar()
@@ -164,7 +162,7 @@ def showAddress():
         DeliveryAddress.grid_remove()
         DeliveryEntry.grid_remove()
 
-DeliveryCheck = Checkbutton(CustomerFrame, text="Delivery", variable=dpCheck, onvalue=1, offvalue=0, command=showAddress)
+DeliveryCheck = Checkbutton(CustomerFrame, text="Delivery (+$3)", variable=dpCheck, onvalue=1, offvalue=0, command=showAddress)
 DeliveryCheck.grid(column=2, row=3, padx=(0,10), pady=5)
 PickupCheck = Checkbutton(CustomerFrame, text="Pickup", variable=dpCheck, onvalue=0, offvalue=1, command=showAddress)
 PickupCheck.grid(column=3, row=3, padx=(0,10), pady=5)
@@ -183,7 +181,7 @@ PizzaFrame.grid(column=1, row=5, ipadx=10, ipady=10, padx=(20,20), pady=(0,5), s
 ButtonFrame = Frame(PizzaFrame)
 ButtonFrame.grid(column=2, row=1, padx=(20))
 
-PizzaList = ttk.Treeview(PizzaFrame, height=14)
+PizzaList = ttk.Treeview(PizzaFrame, height=14, selectmode="browse")
 PizzaList["columns"]=("one")
 PizzaList.column("#0", width=150, minwidth=150, stretch=NO)
 PizzaList.column("one", width=50, minwidth=50, stretch=NO)
@@ -213,7 +211,7 @@ PizzaList.grid(column=1, row=1, padx=(20,0), pady=(10,0), sticky="ew")
 
 TotalCost = 0
 
-OrderList = ttk.Treeview(PizzaFrame, height=14)
+OrderList = ttk.Treeview(PizzaFrame, height=14, selectmode="browse")
 OrderList["columns"]=("one")
 OrderList.column("#0", width=150, minwidth=150, stretch=NO)
 OrderList.column("one", width=50, minwidth=50, stretch=NO)
@@ -229,6 +227,10 @@ TotalRow = OrderList.insert("", 3, "TT", text="Total cost:", values=TotalCost)
 TotalAmount = 0
 TotalAmountRegular = 0
 TotalAmountGourmet = 0
+
+printListReg = []
+printListGour = []
+printList = []
 
 dynamicIID = 0
 
@@ -250,14 +252,13 @@ def addPizza():
                 while getItemName not in ["Regular Pizzas","Gourmet Pizzas"]:
                         if PizzaList.parent(selectedItem) == RegularPizza:
                                 OrderList.insert(RegularPizza, "end", dynamicIID, text=getItemName, values=1)
-                                PrintList.insert(RegularPrint, "end", dynamicIID, text=getItemName, values=1)
-                                #PrintList.focus(len(PrintList.get_children(RegularPrint)))
                                 TotalAmountRegular += 1
+                                printListReg.append(getItemName)
                                 break
                         elif PizzaList.parent(selectedItem) == GourmetPizza:
                                 OrderList.insert(GourmetPizza, "end", dynamicIID, text=getItemName, values=1)
-                                PrintList.insert(GourmetPrint, "end", dynamicIID, text=getItemName, values=1)
                                 TotalAmountGourmet += 1
+                                printListGour.append(getItemName)
                                 break
                 TotalAmount = TotalAmountRegular + TotalAmountGourmet
         dynamicIID += 1
@@ -265,7 +266,6 @@ def addPizza():
         OrderList.set(TotalRow, column="one", value=TotalCost)
         if TotalAmount > 4:
             messagebox.showwarning("Invalid", "Maximum amount of pizzas allowed is 5.")
-        print(dynamicIID)
         
 RegularList = OrderList.get_children(RegularPizza)
 GourmetList = OrderList.get_children(GourmetPizza)
@@ -279,23 +279,23 @@ def removePizza():
         global dynamicIID
         global TotalAmountRegular
         global TotalAmountGourmet
-        if getOrderItemName not in ["Regular Pizzas", "Gourmet Pizzas"]:
-                if OrderList.parent(selectedOrderItem) == "RGP":
-                        OrderList.delete(selectedOrderItem)
-                        PrintList.focus(OrderList.index(selectedOrderItem))
-                        print(OrderList.focus())
-                        TotalCost -= 8.5
-                        TotalAmountRegular -= 1
-                elif OrderList.parent(selectedOrderItem) == "GP":
-                        OrderList.delete(selectedOrderItem)
-                        PrintList.delete(dynamicIID - 1)
-                        TotalCost -= 13.5
-                        TotalAmountGourmet -= 1
-                TotalAmount = TotalAmountRegular + TotalAmountGourmet
-                calcTotalCost()
-                OrderList.set(TotalRow, column="one", value=TotalCost)
-        dynamicIID -= 1
-        print(dynamicIID)
+        if OrderList.focus() == "":
+                messagebox.showwarning("Error", "Please select a pizza to remove!")
+        else:
+                if getOrderItemName not in ["Regular Pizzas", "Gourmet Pizzas"]:
+                        if OrderList.parent(selectedOrderItem) == "RGP":
+                                OrderList.delete(selectedOrderItem)
+                                printListReg.remove(getOrderItemName)
+                                TotalCost -= 8.5
+                                TotalAmountRegular -= 1
+                        elif OrderList.parent(selectedOrderItem) == "GP":
+                                OrderList.delete(selectedOrderItem)
+                                printListGour.remove(getOrderItemName)
+                                TotalCost -= 13.5
+                                TotalAmountGourmet -= 1
+                        TotalAmount = TotalAmountRegular + TotalAmountGourmet
+                        calcTotalCost()
+                        OrderList.set(TotalRow, column="one", value=TotalCost)
 
 AddButton = Button(ButtonFrame, text="Add", command=addPizza)
 AddButton.grid(column=1, row=1, padx=5, pady=(10,0), sticky="ew")
@@ -335,7 +335,7 @@ DeliveryOpt.grid(column=2, row=3, padx=(10), pady=(5))
 # Pizza list's frame
 PizzaFrame = LabelFrame(PrintWindow, text="Order")
 PizzaFrame.grid(column=1, row=4, ipadx=10, ipady=10, padx=(20,20), pady=(0,5), sticky="ew")
-PrintList = ttk.Treeview(PizzaFrame, height=14)
+PrintList = ttk.Treeview(PizzaFrame, height=14, selectmode="none")
 PrintList["columns"]=("one")
 PrintList.column("#0", width=150, minwidth=150, stretch=NO)
 PrintList.column("one", width=50, minwidth=50, stretch=NO)
@@ -364,18 +364,23 @@ def resetEntry():
                 DeliveryEntry.delete(0, 'end')
                 for i in OrderList.get_children(RegularPizza):
                         OrderList.delete(i)
-                        PrintList.delete(i)
                         TotalAmountRegular = 0
+                for i in PrintList.get_children(RegularPizza):
+                        PrintList.delete(i)
                 for i in OrderList.get_children(GourmetPizza):
                         OrderList.delete(i)
-                        PrintList.delete(i)
                         TotalAmountGourmet = 0
+                for i in PrintList.get_children(GourmetPizza):
+                        PrintList.delete(i)
+                del printListReg[:]
+                del printListGour[:]
                 TotalAmount = TotalAmountRegular + TotalAmountGourmet
         calcTotalCost()
         OrderList.set(TotalRow, column="one", value=TotalCost)
 
 def confirmEntry():
         global dynamicIID
+        global TotalCost
         ConfirmPrompt = messagebox.askyesno("Confirm", "Do you wish to confirm the order?")
         if ConfirmPrompt == True:
                 if len(FirstNameInput.get()) == 0 or len(LastNameInput.get()) == 0 or len(PhoneInput.get()) == 0 or (len(address.get()) == 0 and dpCheck.get() == 1):
@@ -383,16 +388,26 @@ def confirmEntry():
                 else:
                         PrintWindow.deiconify()
                         PrintWindow.lift(root)
-                        PrintList.set(TotalRow, column="one", value=TotalCost)
                         custName.set(FirstNameInput.get() + " " + LastNameInput.get())
                         phoneNum.set(PhoneInput.get())
                         printAddress.set(address.get())
                         if dpCheck.get() == 1:
                                 dpOption.set("Delivery")
+                                TotalCost += 3
+                                PrintDeliveryAddress.grid()
+                                printAddress.set(address.get())
                         elif dpCheck.get() == 0:
                                 dpOption.set("Pickup")
                                 PrintDeliveryAddress.grid_remove()
+                                calcTotalCost()
                                 Address.grid_remove()
+                        for item in printListReg:
+                                PrintList.insert(RegularPizza, "end", dynamicIID, text=item, values=1)
+                                dynamicIID += 1
+                        for item in printListGour:
+                                PrintList.insert(GourmetPizza, "end", dynamicIID, text=item, values=1)
+                                dynamicIID += 1
+                        PrintList.set(TotalRow, column="one", value=TotalCost)
                         PrintWindow.grab_set()
                 
 def confirmOrder():
@@ -405,24 +420,33 @@ def confirmOrder():
         DeliveryEntry.delete(0, 'end')
         for i in OrderList.get_children(RegularPizza):
                 OrderList.delete(i)
-                PrintList.delete(i)
                 TotalAmountRegular = 0
+        for i in PrintList.get_children(RegularPizza):
+                PrintList.delete(i)
         for i in OrderList.get_children(GourmetPizza):
                 OrderList.delete(i)
-                PrintList.delete(i)
                 TotalAmountGourmet = 0
+        for i in PrintList.get_children(GourmetPizza):
+                PrintList.delete(i)
+        del printListReg[:]
+        del printListGour[:]
         TotalAmount = TotalAmountRegular + TotalAmountGourmet
         calcTotalCost()
         OrderList.set(TotalRow, column="one", value=TotalCost)
+        messagebox.showinfo("Confirmed", "Your order has been confirmed.")
         PrintWindow.withdraw()
         PrintWindow.grab_release()
 
 def cancelOrder():
         messagebox.showinfo("Canceled", "Your order has been canceled.")
         PrintWindow.withdraw()
+        for i in PrintList.get_children(RegularPizza):
+                PrintList.delete(i)
+        for i in PrintList.get_children(GourmetPizza):
+                PrintList.delete(i)
         PrintWindow.grab_release()
-        
-def checkOrderList(): # Scans the order list for update=
+
+def checkOrderList(): # Scans the order list for update (also used as a debugging function)
         root.after(2000, checkOrderList)  # Loop every 2 seconds
 root.after(2000, checkOrderList)
 
