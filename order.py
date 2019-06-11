@@ -36,18 +36,24 @@ def OpenFile():
 def SaveFile():
     name = asksaveasfilename(initialdir="C:/Users/Admin/Desktop",
                            filetypes =(("Text File", "*.txt"),("All Files","*.*")),
-                           title = "Choose a file."
+                           title = "Save a file."
                            )
 
+# About window
 def aboutDisplay():
     about = Toplevel(root)
     about.title('About')
-    pyzza = ImageTk.PhotoImage(Image.open("pyzza.png"))
+    pyzza = ImageTk.PhotoImage(Image.open("pyzza_logo.png"))
     showPyzza = Label(about, image=pyzza)
     showPyzza.image = pyzza
-    showPyzza.grid(column=1, row=1)
+    showPyzza.grid(column=1, row=1, rowspan=3, padx=20, pady=20)
+    AboutTitle = Label(about, text="About")
+    AboutTitle.grid(column=2, row=1, padx=(0,20), pady=(20,0))
+    AboutText = Label(about, text="Written in Python 3 (barely under 500 lines), this program has been created in order to get 12 credits. Visit the GitHub repo for more information.")
+    AboutText.grid(column=2, row=2, padx=(0,20), pady=(0,20))
     about.lift(root)
 
+# Changes the title of the window
 title = root.title("Pizza Ordering Software")
 
 # Top menu bar
@@ -59,6 +65,7 @@ filemenu.add_command(label="Save", command=SaveFile)
 filemenu.add_command(label="Exit", command=root.quit)
 menubar.add_cascade(label="File", menu=filemenu)
 
+# Configuration menu
 def openConfig():
         ConfigWindow = Toplevel(root)
         ConfigWindow.title("Configurations")
@@ -169,6 +176,7 @@ PickupCheck.grid(column=3, row=3, padx=(0,10), pady=5)
 
 DeliveryCheck.select()
 
+# Deselects the other checkbox automatically
 def deselect():
     if dpCheck.get() == 1:
         PickupCheck.deselect()
@@ -234,12 +242,13 @@ printList = []
 
 dynamicIID = 0
 
+# Calculate the total cost
 def calcTotalCost():
         global TotalCost
         TotalCost = (TotalAmountRegular * 8.50) + (TotalAmountGourmet * 13.50)
 
+# Adds the selected pizza
 def addPizza():
-        # Add the selected pizza
         global TotalAmount
         global TotalCost
         global TotalAmountRegular
@@ -270,6 +279,7 @@ def addPizza():
 RegularList = OrderList.get_children(RegularPizza)
 GourmetList = OrderList.get_children(GourmetPizza)
 
+# Removes the selected pizza
 def removePizza():
         selectedOrderItem = OrderList.focus()
         returnOrderItem = OrderList.item(selectedOrderItem)
@@ -301,15 +311,16 @@ AddButton = Button(ButtonFrame, text="Add", command=addPizza)
 AddButton.grid(column=1, row=1, padx=5, pady=(10,0), sticky="ew")
 RemoveButton = Button(ButtonFrame, text="Remove", command=removePizza)
 RemoveButton.grid(column=1, row=2, padx=5, pady=(10,0), sticky="ew")
-#LoadButton = Button(ButtonFrame, text="Load", command=OpenFile)
-#LoadButton.grid(column=1, row=3, padx=5, pady=(10,0), sticky="ew")
 
+# The order confirmation window
 PrintWindow = Toplevel(root)
 PrintWindow.title("Your order")
 PrintWindow.resizable(False, False)
+
 # Customer's details frame
 CustomerFrame = LabelFrame(PrintWindow, text="Customer's details")
 CustomerFrame.grid(column=1, row=1, ipadx=10, ipady=10, padx=(20), pady=(10,5), sticky="ew")
+
 # Print the customer's details
 custName = StringVar()
 phoneNum = StringVar()
@@ -352,6 +363,7 @@ selectedItem = OrderList.focus()
 returnItem = OrderList.item(selectedItem)
 getItemName = returnItem.get('text')
 
+# Resets the entry fields and lists
 def resetEntry():
         global TotalAmountRegular
         global TotalAmountGourmet
@@ -378,6 +390,7 @@ def resetEntry():
         calcTotalCost()
         OrderList.set(TotalRow, column="one", value=TotalCost)
 
+# Confirms the order
 def confirmEntry():
         global dynamicIID
         global TotalCost
@@ -386,30 +399,34 @@ def confirmEntry():
                 if len(FirstNameInput.get()) == 0 or len(LastNameInput.get()) == 0 or len(PhoneInput.get()) == 0 or (len(address.get()) == 0 and dpCheck.get() == 1):
                         messagebox.showerror("Error", "Please input all of the customer's information.")
                 else:
-                        PrintWindow.deiconify()
-                        PrintWindow.lift(root)
-                        custName.set(FirstNameInput.get() + " " + LastNameInput.get())
-                        phoneNum.set(PhoneInput.get())
-                        printAddress.set(address.get())
-                        if dpCheck.get() == 1:
-                                dpOption.set("Delivery")
-                                TotalCost += 3
-                                PrintDeliveryAddress.grid()
+                        if TotalAmount == 0:
+                                messagebox.showerror("Error", "Please order at least one pizza!") 
+                        else:
+                                PrintWindow.deiconify()
+                                PrintWindow.lift(root)
+                                custName.set(FirstNameInput.get() + " " + LastNameInput.get())
+                                phoneNum.set(PhoneInput.get())
                                 printAddress.set(address.get())
-                        elif dpCheck.get() == 0:
-                                dpOption.set("Pickup")
-                                PrintDeliveryAddress.grid_remove()
-                                calcTotalCost()
-                                Address.grid_remove()
-                        for item in printListReg:
-                                PrintList.insert(RegularPizza, "end", dynamicIID, text=item, values=1)
-                                dynamicIID += 1
-                        for item in printListGour:
-                                PrintList.insert(GourmetPizza, "end", dynamicIID, text=item, values=1)
-                                dynamicIID += 1
-                        PrintList.set(TotalRow, column="one", value=TotalCost)
-                        PrintWindow.grab_set()
+                                if dpCheck.get() == 1:
+                                        dpOption.set("Delivery")
+                                        TotalCost += 3
+                                        PrintDeliveryAddress.grid()
+                                        printAddress.set(address.get())
+                                elif dpCheck.get() == 0:
+                                        dpOption.set("Pickup")
+                                        PrintDeliveryAddress.grid_remove()
+                                        calcTotalCost()
+                                        Address.grid_remove()
+                                for item in printListReg:
+                                        PrintList.insert(RegularPizza, "end", dynamicIID, text=item, values=1)
+                                        dynamicIID += 1
+                                for item in printListGour:
+                                        PrintList.insert(GourmetPizza, "end", dynamicIID, text=item, values=1)
+                                        dynamicIID += 1
+                                PrintList.set(TotalRow, column="one", value=TotalCost)
+                                PrintWindow.grab_set()
                 
+# Finalizes and actually confirms the order.
 def confirmOrder():
         global TotalAmountRegular
         global TotalAmountGourmet
@@ -437,6 +454,7 @@ def confirmOrder():
         PrintWindow.withdraw()
         PrintWindow.grab_release()
 
+# Cancels the order
 def cancelOrder():
         messagebox.showinfo("Canceled", "Your order has been canceled.")
         PrintWindow.withdraw()
@@ -472,11 +490,12 @@ ConfigButton.grid(column=3, row=1, ipadx=15, ipady=20, padx=(0,20), pady=(10,0),
 ExitButton = Button(OptionsFrame, text="Exit program", command=root.quit)
 ExitButton.grid(column=4, row=1, ipadx=15, ipady=20, padx=(0,20), pady=(10,0), sticky="nesw")
 
+# Disables the X button on the order window
 def Pass():
         pass
 PrintWindow.protocol("WM_DELETE_WINDOW", Pass)
 
-root.iconbitmap('favicon.ico')
+root.iconbitmap('favicon.ico') # Set
 root.attributes("-topmost", True)
 root.config(menu=menubar)
 root.mainloop()
