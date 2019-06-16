@@ -6,8 +6,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox, simpledialog
 from tkinter.filedialog import askopenfilename, asksaveasfilename
-from PIL import Image, ImageTk
-
+from tkinter.colorchooser import *
 import os
 import json
 
@@ -20,69 +19,19 @@ lastname = StringVar()
 phonein1 = ''
 address = ''
 
-# Defining functions
-def OpenFile():
-    name = askopenfilename(initialdir="C:/Users/Admin/Desktop",
-                           filetypes =(("Text File", "*.txt"),("All Files","*.*")),
-                           title = "Choose a file."
-                           )
-    print (name)
-    try:
-        with open(name,'r') as UseFile:
-            print(UseFile.read())
-    except:
-        print("No file exists")
-
-def SaveFile():
-    name = asksaveasfilename(initialdir="C:/Users/Admin/Desktop",
-                           filetypes =(("Text File", "*.txt"),("All Files","*.*")),
-                           title = "Save a file."
-                           )
-
 # About window
 def aboutDisplay():
     about = Toplevel(root)
     about.title('About')
-    pyzza = ImageTk.PhotoImage(Image.open("pyzza_logo.png"))
-    showPyzza = Label(about, image=pyzza)
-    showPyzza.image = pyzza
-    showPyzza.grid(column=1, row=1, rowspan=3, padx=20, pady=20)
-    AboutTitle = Label(about, text="About")
-    AboutTitle.grid(column=2, row=1, padx=(0,20), pady=(20,0))
-    AboutText = Label(about, text="Written in Python 3 (barely under 500 lines), this program has been created in order to get 12 credits. Visit the GitHub repo for more information.")
-    AboutText.grid(column=2, row=2, padx=(0,20), pady=(0,20))
+    about.resizable(False, False)
+    AboutTitle = Label(about, text="ABOUT")
+    AboutTitle.grid(column=1, row=1, padx=(20), pady=(20,5))
+    AboutText = Message(about, text="Written in Python 3 (barely under 500 lines), this program has been created in order to get 12 credits. Visit the GitHub repo for more information.", justify=CENTER)
+    AboutText.grid(column=1, row=3, padx=(20), pady=(0,20))
     about.lift(root)
 
 # Changes the title of the window
 title = root.title("Pizza Ordering Software")
-
-# Top menu bar
-menubar= Menu(root)
-
-filemenu = Menu(menubar, tearoff=0)
-filemenu.add_command(label="Open", command=OpenFile)
-filemenu.add_command(label="Save", command=SaveFile)
-filemenu.add_command(label="Exit", command=root.quit)
-menubar.add_cascade(label="File", menu=filemenu)
-
-# Configuration menu
-def openConfig():
-        ConfigWindow = Toplevel(root)
-        ConfigWindow.title("Configurations")
-
-        ConfigWindow.attributes("-topmost", True)
-
-optionmenu = Menu(menubar, tearoff=0)
-optionmenu.add_command(label="Configurations", command=openConfig)
-menubar.add_cascade(label="Options", menu=optionmenu)
-
-def openManual():
-    os.system("start \"\" https://github.com/totenk0pf/ordering-software-3000/blob/master/README.md")
-
-helpmenu = Menu(menubar, tearoff=0)
-helpmenu.add_command(label="Manual", command=openManual)
-helpmenu.add_command(label="About", command=aboutDisplay)
-menubar.add_cascade(label="Help", menu=helpmenu)
 
 # Validation
 def only_characters(char):
@@ -100,7 +49,7 @@ ncmd = root.register(only_numbers)
 # Main GUI
 # Customer's details frame
 CustomerFrame = LabelFrame(root, text="Customer's details")
-CustomerFrame.grid(column=1, row=1, ipadx=10, ipady=10, padx=(20), pady=(10,5), sticky="ew")
+CustomerFrame.grid(column=1, row=2, ipadx=10, ipady=10, padx=(20), pady=(10,5), sticky="ew")
 
 firstname = StringVar()
 lastname = StringVar()
@@ -160,32 +109,9 @@ DeliveryAddress.grid(column=1, row=4, padx=(20,10), pady=5, sticky="ew")
 DeliveryEntry = Entry(CustomerFrame, textvariable=address)
 DeliveryEntry.grid(column=2, columnspan=2, row=4, padx=(0,10), pady=5, sticky="ew")
 
-# Displays/hides address entry
-def showAddress():
-    if dpCheck.get() == 1:
-        DeliveryAddress.grid()
-        DeliveryEntry.grid()
-    elif dpCheck.get() == 0:
-        DeliveryAddress.grid_remove()
-        DeliveryEntry.grid_remove()
-
-DeliveryCheck = Checkbutton(CustomerFrame, text="Delivery (+$3)", variable=dpCheck, onvalue=1, offvalue=0, command=showAddress)
-DeliveryCheck.grid(column=2, row=3, padx=(0,10), pady=5)
-PickupCheck = Checkbutton(CustomerFrame, text="Pickup", variable=dpCheck, onvalue=0, offvalue=1, command=showAddress)
-PickupCheck.grid(column=3, row=3, padx=(0,10), pady=5)
-
-DeliveryCheck.select()
-
-# Deselects the other checkbox automatically
-def deselect():
-    if dpCheck.get() == 1:
-        PickupCheck.deselect()
-    elif dpCheck.get() == 0:
-        DeliveryCheck.deselect()
-
 # Pizza ordering frame
 PizzaFrame = LabelFrame(root, text="Order")
-PizzaFrame.grid(column=1, row=5, ipadx=10, ipady=10, padx=(20,20), pady=(0,5), sticky="ew")
+PizzaFrame.grid(column=1, row=3, ipadx=10, ipady=10, padx=(20,20), pady=(0,5), sticky="ew")
 ButtonFrame = Frame(PizzaFrame)
 ButtonFrame.grid(column=2, row=1, padx=(20))
 
@@ -196,25 +122,22 @@ PizzaList.column("one", width=50, minwidth=50, stretch=NO)
 PizzaList.heading("#0", text="Name", anchor="w")
 PizzaList.heading("one", text="Price", anchor="w")
 
-# INSERT LIST OF PIZZA
+# LIST OF PIZZAS
+initRegDict = [("Hawaiian Pizza", 8.50),("Steak & Bacon Pizza", 8.50),("Pepperoni Pizza", 8.50),("Cheese Pizza", 8.50),("Beef & Onion Pizza", 8.50),("Veggie Pizza", 8.50),("New Yorker Pizza", 8.50)]
+initGourDict = [("Ramadan Halal Pizza", 13.50), ("Pineapple Only Pizza", 13.50), ("Crust Only Pizza", 13.50), ("Pizza that's been in a tomb for 1000 years", 13.50), ("Rice Pizza", 13.50)]
+
 # REGULAR PIZZAS
 RegularPizza = PizzaList.insert("", 1, "RGP", text="Regular Pizzas")
 PizzaList.item(RegularPizza, open=True)
-PizzaList.insert(RegularPizza, "end", 'HP', text="Hawaiian Pizza", values=("$8.50"))
-PizzaList.insert(RegularPizza, "end", 'SBP', text="Steak & Bacon Pizza", values=("$8.50"))
-PizzaList.insert(RegularPizza, "end", 'PP', text="Pepperoni Pizza", values=("$8.50"))
-PizzaList.insert(RegularPizza, "end", 'CP', text="Cheese Pizza", values=("$8.50"))
-PizzaList.insert(RegularPizza, "end", 'BOP', text="Beef & Onion Pizza", values=("$8.50"))
-PizzaList.insert(RegularPizza, "end", 'VP', text="Veggie Pizza", values=("$8.50"))
-PizzaList.insert(RegularPizza, "end", 'NYP', text="New Yorker Pizza", values=("$8.50"))
+for i in initRegDict:
+        PizzaList.insert(RegularPizza, "end", text=i[0], values=i[1])
+
 # GOURMET PIZZAS
 GourmetPizza = PizzaList.insert("", 2, "GP", text="Gourmet Pizzas")
 PizzaList.item(GourmetPizza, open=True)
-PizzaList.insert(GourmetPizza, "end", 'RHP', text="Ramadan Halal Pizza", values=("$13.50"))
-PizzaList.insert(GourmetPizza, "end", 'POP', text="Pineapple Only Pizza", values=("$13.50"))
-PizzaList.insert(GourmetPizza, "end", 'COP', text="Crust Only Pizza", values=("$13.50"))
-PizzaList.insert(GourmetPizza, "end", 'PT', text="Pizza that's been in a tomb for 1000 years", values=("$13.50"))
-PizzaList.insert(GourmetPizza, "end", 'RP', text="Rice Pizza", values=("$13.50"))
+for i in initGourDict:
+        PizzaList.insert(GourmetPizza, "end", text=i[0], values=i[1])
+
 PizzaList.grid(column=1, row=1, padx=(20,0), pady=(10,0), sticky="ew")
 
 TotalCost = 0
@@ -245,7 +168,35 @@ dynamicIID = 0
 # Calculate the total cost
 def calcTotalCost():
         global TotalCost
-        TotalCost = (TotalAmountRegular * 8.50) + (TotalAmountGourmet * 13.50)
+        if dpCheck.get() == 1:
+                TotalCost = (TotalAmountRegular * 8.50) + (TotalAmountGourmet * 13.50) + 3
+        elif dpCheck.get() == 0:
+                TotalCost = (TotalAmountRegular * 8.50) + (TotalAmountGourmet * 13.50)
+
+# Displays/hides address entry
+def showAddress():
+        if dpCheck.get() == 1:
+                DeliveryAddress.grid()
+                DeliveryEntry.grid()
+        elif dpCheck.get() == 0:
+                DeliveryAddress.grid_remove()
+                DeliveryEntry.grid_remove()
+        calcTotalCost()
+        OrderList.set(TotalRow, column="one", value=TotalCost)
+
+DeliveryCheck = Checkbutton(CustomerFrame, text="Delivery (+$3)", variable=dpCheck, onvalue=1, offvalue=0, command=showAddress)
+DeliveryCheck.grid(column=2, row=3, padx=(0,10), pady=5)
+PickupCheck = Checkbutton(CustomerFrame, text="Pickup", variable=dpCheck, onvalue=0, offvalue=1, command=showAddress)
+PickupCheck.grid(column=3, row=3, padx=(0,10), pady=5)
+
+DeliveryCheck.select()
+
+# Deselects the other checkbox automatically
+def deselect():
+        if dpCheck.get() == 1:
+                PickupCheck.deselect()
+        elif dpCheck.get() == 0:
+                DeliveryCheck.deselect()
 
 # Adds the selected pizza
 def addPizza():
@@ -409,13 +360,11 @@ def confirmEntry():
                                 printAddress.set(address.get())
                                 if dpCheck.get() == 1:
                                         dpOption.set("Delivery")
-                                        TotalCost += 3
                                         PrintDeliveryAddress.grid()
                                         printAddress.set(address.get())
                                 elif dpCheck.get() == 0:
                                         dpOption.set("Pickup")
                                         PrintDeliveryAddress.grid_remove()
-                                        calcTotalCost()
                                         Address.grid_remove()
                                 for item in printListReg:
                                         PrintList.insert(RegularPizza, "end", dynamicIID, text=item, values=1)
@@ -478,8 +427,63 @@ CancelButton.grid(column=2, row=1, ipadx=20, ipady=20, padx=(0), pady=(10,0), st
 PrintLabel = Label(PrintWindow)
 PrintWindow.withdraw()
 
+# Header
+shopname = ""
+displayShopName = shopname + "" + "Pizza Shop"
+
+ConfigWindow = Toplevel(root)
+ConfigWindow.title("Configurations")
+ShopNameLabel = Label(ConfigWindow, text="Shop's name:")
+ShopNameLabel.grid(column=1, row=1, padx=(20), pady=(20,5), sticky="ew")
+ShopNameEntry = Entry(ConfigWindow)
+ShopNameEntry.grid(column=2, row=1, padx=(0,20), pady=(20,5), sticky="ew")
+def changeColor():
+        HeaderColor = askcolor()
+        HeadLabel['bg'] = HeaderColor[1]
+ColorButton = Button(ConfigWindow, text="Change header color", command=changeColor)
+ColorButton.grid(column=1, columnspan=2, row=2, padx=(20), pady=(5,5), sticky="ew")
+
+def initConfig():
+        shopname = ShopNameEntry.get()
+        if not shopname == "":
+                displayShopName = shopname + "'s" + " " + "Pizza Shop"
+                HeadLabel['text'] = displayShopName
+                ConfigWindow.withdraw()
+        else:
+                messagebox.showerror("Error", "Please input all of the informations.")
+        configDict = {
+        "shopname": shopname,
+        "headerbg": HeadLabel['bg']
+        }
+        with open('config.json', 'w') as writeconfig:
+                json.dump(configDict, writeconfig)
+        print(configDict)
+
+confirmConfigButton = Button(ConfigWindow, text="Save", command=initConfig)
+confirmConfigButton.grid(column=1, columnspan=2, row=3, padx=(20), pady=(5,20), sticky="ew")
+ConfigWindow.attributes("-topmost", True)
+ConfigWindow.withdraw()
+
+try:
+        with open('config.json') as config:
+                loadedConfig = json.load(config)
+                displayShopName = loadedConfig['shopname'] + "'s" + " " + "Pizza Shop"
+                HeadLabel['text'] = displayShopName
+                print(loadedConfig)     
+except:
+        pass
+
+# Configuration menu
+# Open config menu
+def openConfig():
+        ConfigWindow.deiconify()
+
+HeadLabel = Label(root, bg="#FFFFFF", relief="sunken", borderwidth=2, text=displayShopName)
+HeadLabel.grid(column=1, row=1, ipadx=0, ipady=50, padx=20, pady=(10,5), sticky="ew")
+
+# Options area
 OptionsFrame = LabelFrame(root, text="Options")
-OptionsFrame.grid(column=1, row=6, ipadx=0, ipady=10, padx=(20,20), pady=(0,20), sticky="ew")
+OptionsFrame.grid(column=1, row=4, ipadx=0, ipady=10, padx=(20,20), pady=(0,20), sticky="ew")
 ConfirmButton = Button(OptionsFrame, text="Confirm order", command=confirmEntry)
 ConfirmButton.grid(column=1, row=1, ipadx=15, ipady=20, padx=20, pady=(10,0), sticky="nesw")
 ResetButton = Button(OptionsFrame, text="Reset order", command=resetEntry)
@@ -495,7 +499,81 @@ def Pass():
         pass
 PrintWindow.protocol("WM_DELETE_WINDOW", Pass)
 
-root.iconbitmap('favicon.ico') # Set
+# Save & laod functions
+def OpenFile():
+        loadInfo = askopenfilename(initialdir="C:/Users/Admin/Desktop",
+                                filetypes =(("JSON File", "*.json"),("All Files","*.*")),
+                                title = "Choose a file."
+                                )
+        try:
+                with open(loadInfo,'r') as custInfo:
+                        loadcustList = json.load(custInfo)
+                        firstname.set(loadcustList['firstname'])
+                        lastname.set(loadcustList['lastname'])
+                        phonein1.set(loadcustList['number'])
+                        if loadcustList['option'] == 1:
+                                DeliveryCheck.select()
+                                deselect()
+                                showAddress()
+                        else:
+                                PickupCheck.select()
+                                deselect()
+                                showAddress()
+                        address.set(loadcustList['address'])
+                        printListReg = loadcustList['reglist']
+                        printListGour = loadcustList['gourlist']
+
+        except:
+                print("File failed to load!")
+
+def SaveFile():
+        saveInfo = asksaveasfilename(initialdir="C:/Users/Admin/Desktop",
+                                filetypes =(("JSON File", "*.json"),("All Files","*.*")),
+                                title = "Save a file."
+                                )
+        filename = saveInfo + ".json"
+        custfirstname = FirstNameInput.get()
+        custlastname = LastNameInput.get()
+        custphonenum = PhoneInput.get()
+        custaddress = DeliveryEntry.get()
+        saveDict = {
+        "firstname": custfirstname,
+        "lastname": custlastname,
+        "number": custphonenum,
+        "option": 1,
+        "address": custaddress,
+        "reglist": printListReg,
+        "gourlist": printListGour
+        }
+        if dpCheck.get() == 1:
+                saveDict['option'] = 1
+        elif dpCheck.get() == 0:
+                saveDict['option'] = 0
+        with open(filename,'w') as saveCustInfo:
+                json.dump(saveDict, saveCustInfo)
+
+# Top menu bar
+menubar= Menu(root)
+
+filemenu = Menu(menubar, tearoff=0)
+filemenu.add_command(label="Open", command=OpenFile)
+filemenu.add_command(label="Save", command=SaveFile)
+filemenu.add_command(label="Exit", command=root.quit)
+menubar.add_cascade(label="File", menu=filemenu)
+
+optionmenu = Menu(menubar, tearoff=0)
+optionmenu.add_command(label="Configurations", command=openConfig)
+menubar.add_cascade(label="Options", menu=optionmenu)
+
+def openManual():
+    os.system("start \"\" https://github.com/totenk0pf/ordering-software-3000/blob/master/README.md")
+
+helpmenu = Menu(menubar, tearoff=0)
+helpmenu.add_command(label="Manual", command=openManual)
+helpmenu.add_command(label="About", command=aboutDisplay)
+menubar.add_cascade(label="Help", menu=helpmenu)
+
+#root.iconbitmap('favicon.ico')
 root.attributes("-topmost", True)
 root.config(menu=menubar)
 root.mainloop()
