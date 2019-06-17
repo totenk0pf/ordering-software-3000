@@ -269,8 +269,8 @@ PrintWindow.title("Your order")
 PrintWindow.resizable(False, False)
 
 # Customer's details frame
-CustomerFrame = LabelFrame(PrintWindow, text="Customer's details")
-CustomerFrame.grid(column=1, row=1, ipadx=10, ipady=10, padx=(20), pady=(10,5), sticky="ew")
+CustomerFramePrint = LabelFrame(PrintWindow, text="Customer's details")
+CustomerFramePrint.grid(column=1, row=1, ipadx=10, ipady=10, padx=(20), pady=(10,5), sticky="ew")
 
 # Print the customer's details
 custName = StringVar()
@@ -278,21 +278,21 @@ phoneNum = StringVar()
 printAddress = StringVar()
 dpOption = StringVar()
 
-NameLabel = Label(CustomerFrame, text="Customer's name:")
+NameLabel = Label(CustomerFramePrint, text="Customer's name:")
 NameLabel.grid(column=1, row=1, padx=(20,10), pady=(15,5))
-CustomerName = Label(CustomerFrame, textvariable=custName)
+CustomerName = Label(CustomerFramePrint, textvariable=custName)
 CustomerName.grid(column=2, row=1, padx=(10), pady=(15,5))
-PhoneLabel = Label(CustomerFrame, text="Phone number:")
+PhoneLabel = Label(CustomerFramePrint, text="Phone number:")
 PhoneLabel.grid(column=1, row=2, padx=(20,10), pady=5, sticky="ew")
-PhoneNumber = Label(CustomerFrame, textvariable=phoneNum)
+PhoneNumber = Label(CustomerFramePrint, textvariable=phoneNum)
 PhoneNumber.grid(column=2, row=2, padx=(10), pady=(5))
-DPLabel = Label(CustomerFrame, text="Delivery/Pickup:")
+DPLabel = Label(CustomerFramePrint, text="Delivery/Pickup:")
 DPLabel.grid(column=1, row=3, padx=(20,10), pady=5)
-PrintDeliveryAddress = Label(CustomerFrame, text="Customer's address:")
+PrintDeliveryAddress = Label(CustomerFramePrint, text="Customer's address:")
 PrintDeliveryAddress.grid(column=1, row=4, padx=(20,10), pady=5, sticky="ew")
-Address = Label(CustomerFrame, textvariable=printAddress)
+Address = Label(CustomerFramePrint, textvariable=printAddress)
 Address.grid(column=2, row=4, padx=(10), pady=5, sticky="ew")
-DeliveryOpt = Label(CustomerFrame, textvariable=dpOption)
+DeliveryOpt = Label(CustomerFramePrint, textvariable=dpOption)
 DeliveryOpt.grid(column=2, row=3, padx=(10), pady=(5))
 # Pizza list's frame
 PizzaFrame = LabelFrame(PrintWindow, text="Order")
@@ -464,12 +464,15 @@ confirmConfigButton.grid(column=1, columnspan=2, row=3, padx=(20), pady=(5,20), 
 ConfigWindow.attributes("-topmost", True)
 ConfigWindow.withdraw()
 
+HeadLabel = Label(root, bg="#FFFFFF", relief="sunken", borderwidth=2, text=displayShopName)
+HeadLabel.grid(column=1, row=1, ipadx=0, ipady=50, padx=20, pady=(10,5), sticky="ew")
+
 try:
         with open('config.json') as config:
                 loadedConfig = json.load(config)
                 displayShopName = loadedConfig['shopname'] + "'s" + " " + "Pizza Shop"
                 HeadLabel['text'] = displayShopName
-                print(loadedConfig)     
+                HeadLabel['bg'] = loadedConfig['headerbg']
 except:
         pass
 
@@ -477,9 +480,6 @@ except:
 # Open config menu
 def openConfig():
         ConfigWindow.deiconify()
-
-HeadLabel = Label(root, bg="#FFFFFF", relief="sunken", borderwidth=2, text=displayShopName)
-HeadLabel.grid(column=1, row=1, ipadx=0, ipady=50, padx=20, pady=(10,5), sticky="ew")
 
 # Options area
 OptionsFrame = LabelFrame(root, text="Options")
@@ -499,8 +499,9 @@ def Pass():
         pass
 PrintWindow.protocol("WM_DELETE_WINDOW", Pass)
 
-# Save & laod functions
+# Save & load functions (in progress)
 def OpenFile():
+        global dynamicIID
         loadInfo = askopenfilename(initialdir="C:/Users/Admin/Desktop",
                                 filetypes =(("JSON File", "*.json"),("All Files","*.*")),
                                 title = "Choose a file."
@@ -522,35 +523,53 @@ def OpenFile():
                         address.set(loadcustList['address'])
                         printListReg = loadcustList['reglist']
                         printListGour = loadcustList['gourlist']
-
+                        print(printListReg)
+                        print(printListGour)
         except:
                 print("File failed to load!")
+        for item in printListReg:
+                OrderList.insert(RegularPizza, "end", dynamicIID, text=item, values=1)
+                dynamicIID += 1
+        for item in printListGour:
+                OrderList.insert(GourmetPizza, "end", dynamicIID, text=item, values=1)
+                dynamicIID += 1
 
 def SaveFile():
-        saveInfo = asksaveasfilename(initialdir="C:/Users/Admin/Desktop",
-                                filetypes =(("JSON File", "*.json"),("All Files","*.*")),
-                                title = "Save a file."
-                                )
-        filename = saveInfo + ".json"
-        custfirstname = FirstNameInput.get()
-        custlastname = LastNameInput.get()
-        custphonenum = PhoneInput.get()
-        custaddress = DeliveryEntry.get()
-        saveDict = {
-        "firstname": custfirstname,
-        "lastname": custlastname,
-        "number": custphonenum,
-        "option": 1,
-        "address": custaddress,
-        "reglist": printListReg,
-        "gourlist": printListGour
-        }
-        if dpCheck.get() == 1:
-                saveDict['option'] = 1
-        elif dpCheck.get() == 0:
-                saveDict['option'] = 0
-        with open(filename,'w') as saveCustInfo:
-                json.dump(saveDict, saveCustInfo)
+        if len(FirstNameInput.get()) == 0 or len(LastNameInput.get()) == 0 or len(PhoneInput.get()) == 0 or (len(address.get()) == 0 and dpCheck.get() == 1):
+                        messagebox.showerror("Error", "Please input all of the customer's information.")
+        else:
+                        saveInfo = asksaveasfilename(initialdir="C:/Users/Admin/Desktop",
+                                                filetypes =(("JSON File", "*.json"),("All Files","*.*")),
+                                                title = "Save a file."
+                                                )
+                        filename = saveInfo + ".json"
+                        custfirstname = FirstNameInput.get()
+                        custlastname = LastNameInput.get()
+                        custphonenum = PhoneInput.get()
+                        custaddress = DeliveryEntry.get()
+                        saveDict = {
+                        "firstname": custfirstname,
+                        "lastname": custlastname,
+                        "number": custphonenum,
+                        "option": 1,
+                        "address": custaddress,
+                        "reglist": printListReg,
+                        "gourlist": printListGour
+                        }
+                        if dpCheck.get() == 1:
+                                saveDict['option'] = 1
+                        elif dpCheck.get() == 0:
+                                saveDict['option'] = 0
+                        with open(filename,'w') as saveCustInfo:
+                                json.dump(saveDict, saveCustInfo)
+
+# Save & load buttons
+SLFrame = Frame(CustomerFrame)
+SLFrame.grid(column=4, row=1, rowspan=4)
+SaveButton = Button(SLFrame, text="Save", command=SaveFile)
+SaveButton.grid(column=1, row=1, rowspan=2, ipadx=30, ipady=10, padx=(20,0), pady=(10), sticky="nsew")
+LoadButton = Button(SLFrame, text="Load", command=SaveFile)
+LoadButton.grid(column=1, row=3, rowspan=2, ipadx=30, ipady=10, padx=(20,0), pady=(10,0), sticky="nsew")
 
 # Top menu bar
 menubar= Menu(root)
@@ -573,7 +592,7 @@ helpmenu.add_command(label="Manual", command=openManual)
 helpmenu.add_command(label="About", command=aboutDisplay)
 menubar.add_cascade(label="Help", menu=helpmenu)
 
-#root.iconbitmap('favicon.ico')
+root.iconbitmap('favicon.ico')
 root.attributes("-topmost", True)
 root.config(menu=menubar)
 root.mainloop()
