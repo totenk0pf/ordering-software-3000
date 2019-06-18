@@ -1,5 +1,5 @@
 # PIZZA ORDERING SOFTWARE
-# -- can I get 12 credits?
+# -- can I get 12 credits please?
 # https://github.com/totenk0pf/ordering-software-3000
 
 from tkinter import *
@@ -21,14 +21,14 @@ address = ''
 
 # About window
 def aboutDisplay():
-    about = Toplevel(root)
-    about.title('About')
-    about.resizable(False, False)
-    AboutTitle = Label(about, text="ABOUT")
-    AboutTitle.grid(column=1, row=1, padx=(20), pady=(20,5))
-    AboutText = Message(about, text="Written in Python 3 (barely under 500 lines), this program has been created in order to get 12 credits. Visit the GitHub repo for more information.", justify=CENTER)
-    AboutText.grid(column=1, row=3, padx=(20), pady=(0,20))
-    about.lift(root)
+        about = Toplevel(root)
+        about.title('About')
+        about.resizable(False, False)
+        AboutTitle = Label(about, text="ABOUT")
+        AboutTitle.grid(column=1, row=1, padx=(20), pady=(20,5))
+        AboutText = Message(about, text="Written in Python 3 (barely under 500 lines), this program has been created in order to get 12 credits. Visit the GitHub repo for more information.", justify=CENTER)
+        AboutText.grid(column=1, row=3, padx=(20), pady=(0,20))
+        about.lift(root)
 
 # Changes the title of the window
 title = root.title("Pizza Ordering Software")
@@ -502,6 +502,9 @@ PrintWindow.protocol("WM_DELETE_WINDOW", Pass)
 # Save & load functions (in progress)
 def OpenFile():
         global dynamicIID
+        global TotalAmountRegular
+        global TotalAmountGourmet
+        global TotalAmount
         loadInfo = askopenfilename(initialdir="C:/Users/Admin/Desktop",
                                 filetypes =(("JSON File", "*.json"),("All Files","*.*")),
                                 title = "Choose a file."
@@ -529,10 +532,14 @@ def OpenFile():
                 print("File failed to load!")
         for item in printListReg:
                 OrderList.insert(RegularPizza, "end", dynamicIID, text=item, values=1)
+                TotalAmountRegular += 1
                 dynamicIID += 1
         for item in printListGour:
                 OrderList.insert(GourmetPizza, "end", dynamicIID, text=item, values=1)
+                TotalAmountGourmet += 1
                 dynamicIID += 1
+        calcTotalCost()
+        OrderList.set(TotalRow, column="one", value=TotalCost)
 
 def SaveFile():
         if len(FirstNameInput.get()) == 0 or len(LastNameInput.get()) == 0 or len(PhoneInput.get()) == 0 or (len(address.get()) == 0 and dpCheck.get() == 1):
@@ -568,7 +575,7 @@ SLFrame = Frame(CustomerFrame)
 SLFrame.grid(column=4, row=1, rowspan=4)
 SaveButton = Button(SLFrame, text="Save", command=SaveFile)
 SaveButton.grid(column=1, row=1, rowspan=2, ipadx=30, ipady=10, padx=(20,0), pady=(10), sticky="nsew")
-LoadButton = Button(SLFrame, text="Load", command=SaveFile)
+LoadButton = Button(SLFrame, text="Load", command=OpenFile)
 LoadButton.grid(column=1, row=3, rowspan=2, ipadx=30, ipady=10, padx=(20,0), pady=(10,0), sticky="nsew")
 
 # Top menu bar
