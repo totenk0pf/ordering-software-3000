@@ -26,7 +26,7 @@ def aboutDisplay():
         about.resizable(False, False)
         AboutTitle = Label(about, text="ABOUT")
         AboutTitle.grid(column=1, row=1, padx=(20), pady=(20,5))
-        AboutText = Message(about, text="Written in Python 3 (barely under 500 lines), this program has been created in order to get 12 credits. Visit the GitHub repo for more information.", justify=CENTER)
+        AboutText = Message(about, text="Written in Python 3 (barely over 600 lines), this program has been created in order to get 12 credits. Visit the GitHub repo for more information.", justify=CENTER)
         AboutText.grid(column=1, row=3, padx=(20), pady=(0,20))
         about.lift(root)
 
@@ -505,6 +505,8 @@ def OpenFile():
         global TotalAmountRegular
         global TotalAmountGourmet
         global TotalAmount
+        global printListReg
+        global printListGour
         loadInfo = askopenfilename(initialdir="C:/Users/Admin/Desktop",
                                 filetypes =(("JSON File", "*.json"),("All Files","*.*")),
                                 title = "Choose a file."
@@ -524,6 +526,14 @@ def OpenFile():
                                 deselect()
                                 showAddress()
                         address.set(loadcustList['address'])
+                        for i in OrderList.get_children(RegularPizza):
+                                OrderList.delete(i)
+                                TotalAmountRegular = 0
+                        for i in OrderList.get_children(GourmetPizza):
+                                OrderList.delete(i)
+                                TotalAmountGourmet = 0
+                        del printListReg[:]
+                        del printListGour[:]
                         printListReg = loadcustList['reglist']
                         printListGour = loadcustList['gourlist']
                         print(printListReg)
@@ -539,7 +549,12 @@ def OpenFile():
                 TotalAmountGourmet += 1
                 dynamicIID += 1
         calcTotalCost()
+        TotalAmount = TotalAmountRegular + TotalAmountGourmet
         OrderList.set(TotalRow, column="one", value=TotalCost)
+        FirstNameInput.config(validate="key")
+        LastNameInput.config(validate="key")
+        PhoneInput.config(validate="key")
+        
 
 def SaveFile():
         if len(FirstNameInput.get()) == 0 or len(LastNameInput.get()) == 0 or len(PhoneInput.get()) == 0 or (len(address.get()) == 0 and dpCheck.get() == 1):
@@ -584,7 +599,7 @@ menubar= Menu(root)
 filemenu = Menu(menubar, tearoff=0)
 filemenu.add_command(label="Open", command=OpenFile)
 filemenu.add_command(label="Save", command=SaveFile)
-filemenu.add_command(label="Exit", command=root.quit)
+filemenu.add_command(label="Exit", command=root.destroy)
 menubar.add_cascade(label="File", menu=filemenu)
 
 optionmenu = Menu(menubar, tearoff=0)
