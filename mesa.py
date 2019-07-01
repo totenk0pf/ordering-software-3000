@@ -156,27 +156,6 @@ Totallable.grid(column=1, row=15, pady=5)
 Costlable = Label(text=TCost)
 Costlable.grid(column=2, row=15, pady=5)
 
-def calcTotalCost():
-    global TCost
-    global none
-    TCost = 0
-    none = 5
-    TotalList = [(pset1.get()), (pset2.get()), (pset3.get()), (pset4.get()), (pset5.get())]
-    for pizza in TotalList:
-        if not pizza == "None":
-            none -= 1
-    TCost = (8.5 * len(TotalList)) - (8.5 * none)
-    Costlable.config(text=TCost)
-
-def calcOnClick(self):
-    calcTotalCost()
-
-PickPizza1.bind("<<ComboboxSelected>>", calcOnClick)
-PickPizza2.bind("<<ComboboxSelected>>", calcOnClick)
-PickPizza3.bind("<<ComboboxSelected>>", calcOnClick)
-PickPizza4.bind("<<ComboboxSelected>>", calcOnClick)
-PickPizza5.bind("<<ComboboxSelected>>", calcOnClick)
-
 displayname = StringVar()
 displayphone = StringVar()
 displayaddress = StringVar()
@@ -216,8 +195,13 @@ PrintPizza5.grid(column=1, row=8)
 PrintPizza5['values'] = PizzaList
 PrintPizza5.current(PickPizza5.current())
 
+PrintCostLabel = Label(ReceiptWindow, text="Total cost:")
+PrintCostLabel.grid(column=1, row=9)
+PrintCost = Label(ReceiptWindow, text="")
+PrintCost.grid(column=2, row=9)
+
 ConfirmButton = Button(ReceiptWindow, text="Confirm", command=ReceiptWindow.withdraw, bg="orange red")
-ConfirmButton.grid(row=9, column=1, columnspan=2, sticky="ew", ipadx=35, ipady=5, pady=5)
+ConfirmButton.grid(row=10, column=1, columnspan=2, sticky="ew", ipadx=35, ipady=5, pady=5)
 
 def Pass():
    pass
@@ -228,6 +212,28 @@ ReceiptWindow.protocol("WM_DELETE_WINDOW", Pass)
 ReceiptWindow.withdraw()
 
 #Order
+def calcTotalCost():
+    global TCost
+    global none
+    TCost = 0
+    none = 5
+    TotalList = [(pset1.get()), (pset2.get()), (pset3.get()), (pset4.get()), (pset5.get())]
+    for pizza in TotalList:
+        if not pizza == "None":
+            none -= 1
+    TCost = (8.5 * len(TotalList)) - (8.5 * none)
+    Costlable.config(text=TCost)
+    PrintCost.config(text=TCost)
+
+def calcOnClick(self):
+    calcTotalCost()
+
+PickPizza1.bind("<<ComboboxSelected>>", calcOnClick)
+PickPizza2.bind("<<ComboboxSelected>>", calcOnClick)
+PickPizza3.bind("<<ComboboxSelected>>", calcOnClick)
+PickPizza4.bind("<<ComboboxSelected>>", calcOnClick)
+PickPizza5.bind("<<ComboboxSelected>>", calcOnClick)
+
 def save_info():
     calcTotalCost()
 
