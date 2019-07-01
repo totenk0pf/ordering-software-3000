@@ -194,8 +194,37 @@ AddressLabel = Label(ReceiptWindow, text="Customer's address:")
 AddressLabel.grid(column=1, row=3)
 DisplayAddress = Label(ReceiptWindow, text="")
 DisplayAddress.grid(column=2, row=3)
+
+PrintPizza1 = ttk.Combobox(ReceiptWindow, state="disabled")
+PrintPizza1.grid(column=1, row=4)
+PrintPizza1['values'] = PizzaList
+PrintPizza1.current(PickPizza1.current())
+PrintPizza2 = ttk.Combobox(ReceiptWindow, state="disabled")
+PrintPizza2.grid(column=1, row=5)
+PrintPizza2['values'] = PizzaList
+PrintPizza2.current(PickPizza2.current())
+PrintPizza3 = ttk.Combobox(ReceiptWindow, state="disabled")
+PrintPizza3.grid(column=1, row=6)
+PrintPizza3['values'] = PizzaList
+PrintPizza3.current(PickPizza3.current())
+PrintPizza4 = ttk.Combobox(ReceiptWindow, state="disabled")
+PrintPizza4.grid(column=1, row=7)
+PrintPizza4['values'] = PizzaList
+PrintPizza4.current(PickPizza4.current())
+PrintPizza5 = ttk.Combobox(ReceiptWindow, state="disabled")
+PrintPizza5.grid(column=1, row=8)
+PrintPizza5['values'] = PizzaList
+PrintPizza5.current(PickPizza5.current())
+
+ConfirmButton = Button(ReceiptWindow, text="Confirm", command=ReceiptWindow.withdraw, bg="orange red")
+ConfirmButton.grid(row=9, column=1, columnspan=2, sticky="ew", ipadx=35, ipady=5, pady=5)
+
+def Pass():
+   pass
+
 ReceiptWindow.geometry("")
 ReceiptWindow.resizable(False, False)
+ReceiptWindow.protocol("WM_DELETE_WINDOW", Pass)
 ReceiptWindow.withdraw()
 
 #Order
@@ -229,6 +258,16 @@ def save_info():
             name_info.delete(0, END)
             num_info.delete(0, END)
             DeliveryEntry.delete(0, END)
+            PrintPizza1['values'] = PizzaList
+            PrintPizza1.current(PickPizza1.current())
+            PrintPizza2['values'] = PizzaList
+            PrintPizza2.current(PickPizza2.current())
+            PrintPizza3['values'] = PizzaList
+            PrintPizza3.current(PickPizza3.current())
+            PrintPizza4['values'] = PizzaList
+            PrintPizza4.current(PickPizza4.current())
+            PrintPizza5['values'] = PizzaList
+            PrintPizza5.current(PickPizza5.current())
             PickPizza1.current(0)
             PickPizza2.current(0)
             PickPizza3.current(0)
