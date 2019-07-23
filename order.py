@@ -2,6 +2,11 @@
 # -- can I get 12 credits please?
 # https://github.com/totenk0pf/ordering-software-3000
 
+# SOURCES:
+# http://effbot.org/tkinterbook/
+# https://docs.python.org/3/library/tk.html
+# 
+
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox, simpledialog
@@ -13,11 +18,15 @@ import json
 root = Tk()
 root.resizable(False, False)
 
+root.columnconfigure(2, weight=0)
+root.columnconfigure(3, weight=3)
+root.columnconfigure(4, weight=4)
+
 # Defining variables
 firstname = StringVar()
 lastname = StringVar()
-phonein1 = ''
-address = ''
+phonein1 = StringVar()
+address = StringVar()
 
 # About window
 def aboutDisplay():
@@ -40,19 +49,16 @@ def only_characters(char):
 def only_numbers(char):
         return char.isdigit()
 
-# LETTERS ONLY
+# Letters only
 ccmd = root.register(only_characters)
 
-# NUMBERS ONLY
+# Numbers only
 ncmd = root.register(only_numbers)
 
 # Main GUI
 # Customer's details frame
 CustomerFrame = LabelFrame(root, text="Customer's details")
 CustomerFrame.grid(column=1, row=2, ipadx=10, ipady=10, padx=(20), pady=(10,5), sticky="ew")
-
-firstname = StringVar()
-lastname = StringVar()
 
 # Input customer's name
 NameLabel = Label(CustomerFrame, text="Customer's name:")
@@ -63,13 +69,6 @@ LastNameInput = Entry(CustomerFrame, textvariable=lastname, validate="key", vali
 LastNameInput.grid(column=3, row=1, padx=(0,10), pady=(15,5), sticky="ew")
 
 # Input customer's phone number
-root.columnconfigure(2, weight=0)
-root.columnconfigure(3, weight=3)
-root.columnconfigure(4, weight=4)
-
-# Defining text variables
-phonein1 = StringVar()
-
 PhoneLabel = Label(CustomerFrame, text="Phone number:")
 PhoneLabel.grid(column=1, row=2, padx=(20,10), pady=5, sticky="ew")
 PhoneInput = Entry(CustomerFrame, textvariable=phonein1, validate="key", validatecommand=(ncmd, '%S'))
@@ -101,8 +100,6 @@ dpCheck.set(0)
 
 DPLabel = Label(CustomerFrame, text="Delivery/Pickup:")
 DPLabel.grid(column=1, row=3, padx=(20,10), pady=5)
-
-address = StringVar()
 
 DeliveryAddress = Label(CustomerFrame, text="Customer's address:")
 DeliveryAddress.grid(column=1, row=4, padx=(20,10), pady=5, sticky="ew")
@@ -460,7 +457,9 @@ def initConfig():
         print(configDict)
 
 confirmConfigButton = Button(ConfigWindow, text="Save", command=initConfig)
-confirmConfigButton.grid(column=1, columnspan=2, row=3, padx=(20), pady=(5,20), sticky="ew")
+confirmConfigButton.grid(column=1, row=3, ipadx=40, padx=(20,5), pady=(5,20), sticky="ew")
+cancelConfigButton = Button(ConfigWindow, text="Cancel", command=ConfigWindow.withdraw)
+cancelConfigButton.grid(column=2, row=3, padx=(5,20), pady=(5,20), sticky="ew")
 ConfigWindow.attributes("-topmost", True)
 ConfigWindow.withdraw()
 
@@ -491,13 +490,14 @@ ResetButton.grid(column=2, row=1, ipadx=20, ipady=20, padx=(0,20), pady=(10,0), 
 ConfigButton = Button(OptionsFrame, text="Configurations", command=openConfig)
 ConfigButton.grid(column=3, row=1, ipadx=15, ipady=20, padx=(0,20), pady=(10,0), sticky="nesw")
 
-ExitButton = Button(OptionsFrame, text="Exit program", command=root.quit)
+ExitButton = Button(OptionsFrame, text="Exit program", command=root.destroy)
 ExitButton.grid(column=4, row=1, ipadx=15, ipady=20, padx=(0,20), pady=(10,0), sticky="nesw")
 
 # Disables the X button on the order window
 def Pass():
         pass
 PrintWindow.protocol("WM_DELETE_WINDOW", Pass)
+ConfigWindow.protocol("WM_DELETE_WINDOW", Pass)
 
 # Save & load functions (in progress)
 def OpenFile():
