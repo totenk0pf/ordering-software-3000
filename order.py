@@ -240,9 +240,14 @@ class main_window(Frame):
                         try:
                                 with open(load_info,'r') as custInfo:
                                         loadcustList = json.load(custInfo)
-                                        firstname.set(loadcustList['firstname'])
-                                        lastname.set(loadcustList['lastname'])
-                                        phonein1.set(loadcustList['number'])
+                                        val.firstname.set(loadcustList['firstname'])
+                                        val.lastname.set(loadcustList['lastname'])
+                                        val.phonein1.set(loadcustList['number'])
+                                        self.first_name_input.config(validate="key")
+                                        self.last_name_input.config(validate="key")
+                                        self.phone_input.config(validate="key")
+                                        val.print_list_reg = loadcustList['reglist']
+                                        val.print_list_gour = loadcustList['gourlist']
                                         if loadcustList['option'] == 1:
                                                 self.delivery_check.select()
                                                 self.pickup_check.deselect()
@@ -251,35 +256,30 @@ class main_window(Frame):
                                                 self.pickup_check.select()
                                                 self.delivery_check.deselect()
                                                 show_address()
-                                        self.address.set(loadcustList['address'])
+                                        val.address.set(loadcustList['address'])
                                         for i in self.order_list.get_children(self.regular_pizza):
                                                 self.order_list.delete(i)
                                                 val.total_amount_regular = 0
                                         for i in self.order_list.get_children(self.gourmet_pizza):
                                                 self.order_list.delete(i)
                                                 val.total_amount_gourmet = 0
+                                        for item in val.print_list_reg:
+                                                self.order_list.insert(self.regular_pizza, "end", val.dynamic_iid, text=item, values=1)
+                                                val.total_amount_regular += 1
+                                                val.dynamic_iid += 1
+                                        for item in val.print_list_gour:
+                                                self.order_list.insert(self.gourmet_pizza, "end", val.dynamic_iid, text=item, values=1)
+                                                val.total_amount_gourmet += 1
+                                                val.dynamic_iid += 1
+                                        main_app.calc_total_cost()
+                                        val.total_amount = val.total_amount_regular + val.total_amount_gourmet
+                                        self.order_list.set(self.total_row, column="one", value=val.total_cost)
                                         del val.print_list_reg[:]
                                         del val.print_list_gour[:]
-                                        val.print_list_reg = loadcustList['reglist']
-                                        val.print_list_gour = loadcustList['gourlist']
                                         print(val.print_list_reg)
                                         print(val.print_list_gour)
                         except:
                                 print("File failed to load!")
-                        for item in val.print_list_reg:
-                                self.order_list.insert(self.regular_pizza, "end", val.dynamic_iid, text=item, values=1)
-                                val.total_amount_regular += 1
-                                val.dynamic_iid += 1
-                        for item in val.print_list_gour:
-                                self.order_list.insert(self.gourmet_pizza, "end", val.dynamic_iid, text=item, values=1)
-                                val.total_amount_gourmet += 1
-                                val.dynamic_iid += 1
-                        main_app.calc_total_cost()
-                        val.total_amount = val.total_amount_regular + val.total_amount_gourmet
-                        self.order_list.set(self.total_row, column="one", value=val.total_cost)
-                        self.first_name_input.config(validate="key")
-                        self.last_name_input.config(validate="key")
-                        self.phone_input.config(validate="key")
                         
 
                 def save_file():
