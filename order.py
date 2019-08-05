@@ -246,6 +246,8 @@ class main_window(Frame):
                                         self.first_name_input.config(validate="key")
                                         self.last_name_input.config(validate="key")
                                         self.phone_input.config(validate="key")
+                                        del val.print_list_reg[:]
+                                        del val.print_list_gour[:]
                                         val.print_list_reg = loadcustList['reglist']
                                         val.print_list_gour = loadcustList['gourlist']
                                         if loadcustList['option'] == 1:
@@ -274,10 +276,6 @@ class main_window(Frame):
                                         main_app.calc_total_cost()
                                         val.total_amount = val.total_amount_regular + val.total_amount_gourmet
                                         self.order_list.set(self.total_row, column="one", value=val.total_cost)
-                                        del val.print_list_reg[:]
-                                        del val.print_list_gour[:]
-                                        print(val.print_list_reg)
-                                        print(val.print_list_gour)
                         except:
                                 print("File failed to load!")
                         
@@ -343,9 +341,9 @@ class main_window(Frame):
                 # About window
                 def about_display():
                         self.about = Toplevel(self)
-                        self.about.title('self.about')
+                        self.about.title('About')
                         self.about.resizable(False, False)
-                        self.about_title = Label(self.about, text="self.about")
+                        self.about_title = Label(self.about, text="About")
                         self.about_title.grid(column=1, row=1, padx=(20), pady=(20,5))
                         self.about_text = Message(self.about, text="Written in Python 3 (barely over 600 lines), this program has been created in order to get 12 credits. Visit the GitHub repo for more information.", justify=CENTER)
                         self.about_text.grid(column=1, row=3, padx=(20), pady=(0,20))
@@ -353,7 +351,7 @@ class main_window(Frame):
                         
                 helpmenu = Menu(menubar, tearoff=0)
                 helpmenu.add_command(label="Manual", command=open_manual)
-                helpmenu.add_command(label="self.about", command=about_display)
+                helpmenu.add_command(label="About", command=about_display)
                 menubar.add_cascade(label="Help", menu=helpmenu)
 
                 self.master.config(menu=menubar)
@@ -431,7 +429,6 @@ class print_window(Toplevel):
                 self.withdraw()
 
         def widget(self, *args):
-                #global customer_name, phone_number, val.print_address, val.dp_option, firstname, lastname, phonein1, address, val.total_cost, val.total_amount, val.total_amount_regular, val.total_amount_gourmet, val.print_list_reg, val.print_list_gour, self.print_list, val.dynamic_iid
                 self.customer_frame_print = LabelFrame(self, text="Customer's details")
                 self.customer_frame_print.grid(column=1, row=1, ipadx=10, ipady=10, padx=(20), pady=(10,5), sticky="ew")
 
@@ -587,7 +584,6 @@ class configuration_window(Toplevel):
 root = Tk()
 
 # Declaring variables in another class so when the GUI initializes it doesn't throw 3000 errors about "_root" at me
-
 class var():
         def __init__(self):
                 self.customer_name = StringVar()
