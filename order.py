@@ -38,7 +38,6 @@ class main_window(Frame):
                         val.total_cost = (val.total_amount_regular * 8.50) + (val.total_amount_gourmet * 13.50)
 
         def widget(self, *args):
-                # Declaring variables
                 # Main GUI
                 # LIST OF PIZZAS
                 init_reg_dict = [("Hawaiian Pizza", 8.50),("Steak & Bacon Pizza", 8.50),("Pepperoni Pizza", 8.50),("Cheese Pizza", 8.50),("Beef & Onion Pizza", 8.50),("Veggie Pizza", 8.50),("New Yorker Pizza", 8.50)]
@@ -223,13 +222,6 @@ class main_window(Frame):
                 self.gourmet_pizza = self.order_list.insert("", 2, "GP", text="Gourmet Pizzas")
                 self.order_list.item(self.gourmet_pizza, open=True)
                 self.total_row = self.order_list.insert("", 3, "TT", text="Total cost:", values=val.total_cost)
-
-                '''# Parse the items from the order list
-                selected_item = order_list.focus()
-                return_item = order_list.item(selected_item)
-                get_item_name = return_item.get('text')
-                regular_list = order_list.get_children(regular_pizza)
-                gourmet_list = order_list.get_children(gourmet_pizza)'''
 
                 # Save & load functions (in progress)
                 def open_file():
