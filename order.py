@@ -39,28 +39,34 @@ class main_window(Frame):
 
         def widget(self, *args):
                 # Main GUI
-                # LIST OF PIZZAS
-                init_reg_dict = [("Hawaiian Pizza", 8.50),("Steak & Bacon Pizza", 8.50),("Pepperoni Pizza", 8.50),("Cheese Pizza", 8.50),("Beef & Onion Pizza", 8.50),("Veggie Pizza", 8.50),("New Yorker Pizza", 8.50)]
-                init_gour_dict = [("Ramadan Halal Pizza", 13.50), ("Pineapple Only Pizza", 13.50), ("Crust Only Pizza", 13.50), ("Pizza that's been in a tomb for 1000 years", 13.50), ("Rice Pizza", 13.50)]
-                
                 # Header
-                shopname = ""
-                display_shop_name = shopname + "" + "Pizza Shop"
-                
-                self.head_label = Label(self, bg="#FFFFFF", relief="sunken", borderwidth=2, text=display_shop_name)
+                self.head_label = Label(self, bg="#FFFFFF", relief="sunken", borderwidth=2)
                 self.head_label.grid(column=1, row=1, ipadx=0, ipady=50, padx=20, pady=(10,5), sticky="ew")
+
+                # Load "config.json" file at launch by using Python's built-in JSON parsing module
+                def load_config():
+                        try:
+                                with open('config.json') as config:
+                                        loaded_config = json.load(config)
+                                        self.display_shop_name = loaded_config['shopname'] + "'s" + " " + "Pizza Shop"
+                                        self.head_label['text'] = self.display_shop_name
+                                        self.head_label['bg'] = loaded_config['headerbg']
+                        except:
+                                print("Config failed to load!")
+                load_config()
                 
                 # Customer's details frame
                 self.customer_frame = LabelFrame(self, text="Customer's details")
                 self.customer_frame.grid(column=1, row=2, ipadx=10, ipady=10, padx=(20), pady=(10,5), sticky="ew")
 
                 # Validation
-                def only_characters(char):
+                def only_characters(char): # Return whether the input is a character or not
                         return char.isalpha()
-                def only_numbers(char):
+                def only_numbers(char): # Return whether the input is a number or not
                         return char.isdigit()
 
                 # Phone number input's validation
+                
                 def fnameLimit(first_name_input):
                         if len(val.firstname.get()) >= 10:
                                 val.firstname.set(val.firstname.get()[:10])
@@ -74,11 +80,11 @@ class main_window(Frame):
                                 val.phonein1.set(val.phonein1.get()[:9])
                                 self.delivery_entry.focus()
                 
-                # Letters only
+                # Registers commands so they can be called during validation
                 ccmd = self.register(only_characters)
-                # Numbers only
                 ncmd = self.register(only_numbers)
-                
+
+                # The trace function is applied to input fields to trace the user's input (validation)
                 val.firstname.trace('w', lambda *args:fnameLimit(self.first_name_input))
                 val.lastname.trace('w', lambda *args:lnameLimit(self.last_name_input))
                 val.phonein1.trace('w', lambda *args:phone1Limit(self.phone_input))
@@ -90,11 +96,12 @@ class main_window(Frame):
                 self.first_name_input.grid(column=2, row=1, padx=(0,10), pady=(15,5), sticky="ew")
                 self.last_name_input = Entry(self.customer_frame, textvariable=val.lastname, validate="key", validatecommand=(ccmd, '%S'))
                 self.last_name_input.grid(column=3, row=1, padx=(0,10), pady=(15,5), sticky="ew")
+                #"key" is the type of validation that triggers the command assigned to "validatecommand", which in turn is called upon when "key" is detected in the input fields. "validatecommand" applies the given command onto "%S" (the text string being inserted/deleted).
 
                 # Input customer's phone number
                 self.phone_label = Label(self.customer_frame, text="Phone number:")
                 self.phone_label.grid(column=1, row=2, padx=(20,10), pady=5, sticky="ew")
-                self.phone_input = Entry(self.customer_frame, textvariable=val.phonein1, validate="key", validatecommand=(ncmd, '%S'))
+                self.phone_input = Entry(self.customer_frame, textvariable=val.phonein1, validate="key", validatecommand=(ncmd, '%S')) # The same validation method from above is applied
                 self.phone_input.grid(column=2, columnspan=2, row=2, padx=(0,10), pady=5, sticky="ew")
 
                 # Delivery/Pickup
@@ -102,15 +109,15 @@ class main_window(Frame):
                 self.dp_label.grid(column=1, row=3, padx=(20,10), pady=5)
 
                 # Displays/hides address entry
-                def show_address():
-                        if val.dp_check.get() == 1:
+                def show_address(): # Function retrieves a value from the var class, to see which checkbox is being ticked.
+                        if val.dp_check.get() == 1: 
                                 self.delivery_address.grid()
                                 self.delivery_entry.grid()
                         elif val.dp_check.get() == 0:
                                 self.delivery_address.grid_remove()
                                 self.delivery_entry.grid_remove()
                         self.calc_total_cost()
-                        self.order_list.set(self.total_row, column="one", value=val.total_cost)
+                        self.order_list.set(self.total_row, column="one", value=val.total_cost) # The cost is recalculated and price displays are reset to the new value.
 
                 # Deselects the other checkbox automatically
                 def deselect():
@@ -148,24 +155,24 @@ class main_window(Frame):
                         selected_item = self.pizza_list.focus()
                         return_item = self.pizza_list.item(selected_item)
                         get_item_name = return_item.get('text')
-                        if val.total_amount <= 4:
-                                while get_item_name not in ["Regular Pizzas","Gourmet Pizzas"]:
+                        if val.total_amount <= 4: # Checks if the total amount of pizzas ordered is less than 4 or not
+                                while get_item_name not in ["Regular Pizzas","Gourmet Pizzas"]: # Checks if the selected pizza is the category and not an actual pizza
                                         if self.pizza_list.parent(selected_item) == self.regular_pizza:
-                                                self.order_list.insert(self.regular_pizza, "end", val.dynamic_iid, text=get_item_name, values=1)
-                                                val.total_amount_regular += 1
-                                                val.print_list_reg.append(get_item_name)
+                                                self.order_list.insert(self.regular_pizza, "end", val.dynamic_iid, text=get_item_name, values=1) # Insert a pizza with values retrieved from the selection
+                                                val.total_amount_regular += 1 # Increases the amount counter by 1
+                                                val.print_list_reg.append(get_item_name) # Adds an item to the receipt/print list with values retrieved from the selection.
                                                 break
-                                        elif self.pizza_list.parent(selected_item) == self.gourmet_pizza:
+                                        elif self.pizza_list.parent(selected_item) == self.gourmet_pizza: # Same code from above, but for gourmet pizzas
                                                 self.order_list.insert(self.gourmet_pizza, "end", val.dynamic_iid, text=get_item_name, values=1)
                                                 val.total_amount_gourmet += 1
                                                 val.print_list_gour.append(get_item_name)
                                                 break
-                                val.total_amount = val.total_amount_regular + val.total_amount_gourmet
-                        val.dynamic_iid += 1
-                        main_app.calc_total_cost()
-                        self.order_list.set(self.total_row, column="one", value=val.total_cost)
+                                val.total_amount = val.total_amount_regular + val.total_amount_gourmet # Calculates the total amount of pizzas
+                        val.dynamic_iid += 1 # Increases the IID counter
+                        main_app.calc_total_cost() 
+                        self.order_list.set(self.total_row, column="one", value=val.total_cost) # Calculates the total cost and reset the price displays to the new value.
                         if val.total_amount > 4:
-                            messagebox.showwarning("Invalid", "Maximum amount of pizzas allowed is 5.")
+                            messagebox.showwarning("Invalid", "Maximum amount of pizzas allowed is 5.") # Shows a warning if the user tries to add more than 5 pizzas.
 
                 # Removes the selected pizza
                 def remove_pizza():
@@ -174,15 +181,15 @@ class main_window(Frame):
                         get_order_item_name = return_order_item.get('text')
                         
                         if self.order_list.focus() == "":
-                                messagebox.showwarning("Error", "Please select a pizza to remove!")
+                                messagebox.showwarning("Error", "Please select a pizza to remove!") # Shows a warning if the user doesn't select a pizza to be removed.
                         else:
-                                if get_order_item_name not in ["Regular Pizzas", "Gourmet Pizzas"]:
-                                        if self.order_list.parent(selected_order_item) == "RGP":
-                                                self.order_list.delete(selected_order_item)
+                                if get_order_item_name not in ["Regular Pizzas", "Gourmet Pizzas"]: # Checks if the selected pizza is the category and not an actual pizza
+                                        if self.order_list.parent(selected_order_item) == "RGP": # Checks what group the selected pizza belongs to
+                                                self.order_list.delete(selected_order_item) # Removes item from the order list
                                                 val.print_list_reg.remove(get_order_item_name)
-                                                val.total_cost -= 8.5
-                                                val.total_amount_regular -= 1
-                                        elif self.order_list.parent(selected_order_item) == "GP":
+                                                val.total_cost -= 8.5 # Deducts a value from the total cost
+                                                val.total_amount_regular -= 1 # Deducts the total amount of regular pizzas
+                                        elif self.order_list.parent(selected_order_item) == "GP": # Same code from above, but for gourmet pizzas
                                                 self.order_list.delete(selected_order_item)
                                                 val.print_list_gour.remove(get_order_item_name)
                                                 val.total_cost -= 13.5
@@ -197,16 +204,16 @@ class main_window(Frame):
                 self.remove_button.grid(column=1, row=2, padx=5, pady=(10,0), sticky="ew")
 
                 # REGULAR PIZZAS
-                self.regular_pizza = self.pizza_list.insert("", 1, "RGP", text="Regular Pizzas")
-                self.pizza_list.item(self.regular_pizza, open=True)
-                for i in init_reg_dict:
-                        self.pizza_list.insert(self.regular_pizza, "end", text=i[0], values=i[1])
+                self.regular_pizza = self.pizza_list.insert("", 1, "RGP", text="Regular Pizzas") # Adds a regular pizza category to the pizza list
+                self.pizza_list.item(self.regular_pizza, open=True) # Expands the category 
+                for i in val.init_reg_dict:
+                        self.pizza_list.insert(self.regular_pizza, "end", text=i[0], values=i[1]) # Inserts the regular pizzas into the pizza list
 
                 # GOURMET PIZZAS
-                self.gourmet_pizza = self.pizza_list.insert("", 2, "GP", text="Gourmet Pizzas")
-                self.pizza_list.item(self.gourmet_pizza, open=True)
-                for i in init_gour_dict:
-                        self.pizza_list.insert(self.gourmet_pizza, "end", text=i[0], values=i[1])
+                self.gourmet_pizza = self.pizza_list.insert("", 2, "GP", text="Gourmet Pizzas" ) # Adds a gourmet pizza category to the pizza list
+                self.pizza_list.item(self.gourmet_pizza, open=True) # Expands the category
+                for i in val.init_gour_dict:
+                        self.pizza_list.insert(self.gourmet_pizza, "end", text=i[0], values=i[1]) # Inserts the gourmet pizzas into the pizza list
 
                 self.pizza_list.grid(column=1, row=1, padx=(20,0), pady=(10,0), sticky="ew")
 
@@ -217,32 +224,32 @@ class main_window(Frame):
                 self.order_list.heading("#0", text="Name", anchor="w")
                 self.order_list.heading("one", text="Amount", anchor="w")
                 self.order_list.grid(column=3, row=1, padx=0, pady=(10,0), sticky="ew")
-                self.regular_pizza = self.order_list.insert("", 1, "RGP", text="Regular Pizzas")
-                self.order_list.item(self.regular_pizza, open=True)
-                self.gourmet_pizza = self.order_list.insert("", 2, "GP", text="Gourmet Pizzas")
-                self.order_list.item(self.gourmet_pizza, open=True)
-                self.total_row = self.order_list.insert("", 3, "TT", text="Total cost:", values=val.total_cost)
+                self.regular_pizza = self.order_list.insert("", 1, "RGP", text="Regular Pizzas") # Adds a regular pizza category into the order list 
+                self.order_list.item(self.regular_pizza, open=True) # Expands the category 
+                self.gourmet_pizza = self.order_list.insert("", 2, "GP", text="Gourmet Pizzas") # Adds a gourmet pizza category to the pizza list
+                self.order_list.item(self.gourmet_pizza, open=True) # Expands the category 
+                self.total_row = self.order_list.insert("", 3, "TT", text="Total cost:", values=val.total_cost) # Sets the total cost to its initial value
 
                 # Save & load functions (in progress)
                 def open_file():
                         load_info = askopenfilename(initialdir="C:/Users/Admin/Desktop",
                                                 filetypes =(("JSON File", "*.json"),("All Files","*.*")),
                                                 title = "Choose a file."
-                                                )
+                                                ) # Initializes a prompt asking for a JSON file.
                         try:
                                 with open(load_info,'r') as custInfo:
-                                        loadcustList = json.load(custInfo)
-                                        val.firstname.set(loadcustList['firstname'])
-                                        val.lastname.set(loadcustList['lastname'])
-                                        val.phonein1.set(loadcustList['number'])
-                                        self.first_name_input.config(validate="key")
-                                        self.last_name_input.config(validate="key")
+                                        loadcustList = json.load(custInfo) # Parses the chosen JSON file, and retrieves the embedded list
+                                        val.firstname.set(loadcustList['firstname']) # Sets customer's first name
+                                        val.lastname.set(loadcustList['lastname']) # Sets customer's last name
+                                        val.phonein1.set(loadcustList['number']) # Sets customer's phone number
+                                        self.first_name_input.config(validate="key") # Sets the validation for entry fields
+                                        self.last_name_input.config(validate="key") 
                                         self.phone_input.config(validate="key")
-                                        del val.print_list_reg[:]
-                                        del val.print_list_gour[:]
-                                        val.print_list_reg = loadcustList['reglist']
-                                        val.print_list_gour = loadcustList['gourlist']
-                                        if loadcustList['option'] == 1:
+                                        del val.print_list_reg[:] # Empties the regular print list 
+                                        del val.print_list_gour[:] # Empties the gourmet print list
+                                        val.print_list_reg = loadcustList['reglist'] # Replaces the regular print list's elements with those from the parsed JSON file.
+                                        val.print_list_gour = loadcustList['gourlist'] # Replaces the gourmet print list's elements with those from the parsed JSON file.
+                                        if loadcustList['option'] == 1: # Works the same as the deselect() function
                                                 self.delivery_check.select()
                                                 self.pickup_check.deselect()
                                                 show_address()
@@ -250,26 +257,26 @@ class main_window(Frame):
                                                 self.pickup_check.select()
                                                 self.delivery_check.deselect()
                                                 show_address()
-                                        val.address.set(loadcustList['address'])
-                                        for i in self.order_list.get_children(self.regular_pizza):
+                                        val.address.set(loadcustList['address']) # Sets customer's address
+                                        for i in self.order_list.get_children(self.regular_pizza): # Empties the regular order list 
                                                 self.order_list.delete(i)
                                                 val.total_amount_regular = 0
-                                        for i in self.order_list.get_children(self.gourmet_pizza):
+                                        for i in self.order_list.get_children(self.gourmet_pizza): # Empties the gourmet order list
                                                 self.order_list.delete(i)
                                                 val.total_amount_gourmet = 0
-                                        for item in val.print_list_reg:
+                                        for item in val.print_list_reg: # Adds the pizzas in the regular print list 
                                                 self.order_list.insert(self.regular_pizza, "end", val.dynamic_iid, text=item, values=1)
                                                 val.total_amount_regular += 1
                                                 val.dynamic_iid += 1
-                                        for item in val.print_list_gour:
+                                        for item in val.print_list_gour: # Adds the pizzas in the gourmet print list 
                                                 self.order_list.insert(self.gourmet_pizza, "end", val.dynamic_iid, text=item, values=1)
                                                 val.total_amount_gourmet += 1
                                                 val.dynamic_iid += 1
-                                        main_app.calc_total_cost()
-                                        val.total_amount = val.total_amount_regular + val.total_amount_gourmet
-                                        self.order_list.set(self.total_row, column="one", value=val.total_cost)
+                                        main_app.calc_total_cost() # Calculates the total cost
+                                        val.total_amount = val.total_amount_regular + val.total_amount_gourmet # Calculates the total amount
+                                        self.order_list.set(self.total_row, column="one", value=val.total_cost) # Sets the total cost display
                         except:
-                                print("File failed to load!")
+                                print("File failed to load!") # Prints a message should the file fail to load
                         
 
                 def save_file():
@@ -321,14 +328,14 @@ class main_window(Frame):
                 # Configuration menu
                 # Open config menu
                 def open_config():
-                        config_app.grid()
+                        config_app.deiconify() # Unhides the configuration window
 
                 optionmenu = Menu(menubar, tearoff=0)
                 optionmenu.add_command(label="Configurations", command=open_config)
                 menubar.add_cascade(label="Options", menu=optionmenu)
 
                 def open_manual():
-                        os.system("start \"\" https://github.com/totenk0pf/ordering-software-3000/blob/self/README.md")
+                        os.system("start \"\"https://github.com/totenk0pf/ordering-software-3000/tree/treeview-manual") # Opens manual with the default browser
 
                 # About window
                 def about_display():
@@ -346,18 +353,18 @@ class main_window(Frame):
                 helpmenu.add_command(label="About", command=about_display)
                 menubar.add_cascade(label="Help", menu=helpmenu)
 
-                self.master.config(menu=menubar)
+                self.master.config(menu=menubar) # Sets the menubar widget as top menu for the program
 
                 def confirm_entry():
-                        confirm_prompt = messagebox.askyesno("Confirm", "Do you wish to confirm the order?")
+                        confirm_prompt = messagebox.askyesno("Confirm", "Do you wish to confirm the order?") # Displays a confirmation dialogue
                         if confirm_prompt == True:
                                 if len(self.first_name_input.get()) == 0 or len(self.last_name_input.get()) == 0 or len(self.phone_input.get()) == 0 or (len(val.address.get()) == 0 and val.dp_check.get() == 1):
-                                        messagebox.showerror("Error", "Please input all of the customer's information.")
+                                        messagebox.showerror("Error", "Please input all of the customer's information.") # Shows an error message if one of the input fields are left empty
                                 else:
                                         if val.total_amount == 0:
-                                                messagebox.showerror("Error", "Please order at least one pizza!") 
+                                                messagebox.showerror("Error", "Please order at least one pizza!") # Shows an error message if no pizzas are ordered
                                         else:
-                                                print_app.display_info()
+                                                print_app.display_info() # Displays the receipt/print window
 
                 # Options area
                 option_frame = LabelFrame(self, text="Options")
@@ -367,27 +374,27 @@ class main_window(Frame):
 
                 # Resets the entry fields and lists
                 def reset_entry():
-                        reset_prompt = messagebox.askyesno("Reset", "Are you sure you want to reset the customer's information?")
+                        reset_prompt = messagebox.askyesno("Reset", "Are you sure you want to reset the customer's information?") # Displays a confirmation dialogue
                         if reset_prompt == True:
-                                self.first_name_input.delete(0, 'end')
-                                self.last_name_input.delete(0, 'end')
-                                self.phone_input.delete(0, 'end')
-                                self.delivery_entry.delete(0, 'end')
+                                self.first_name_input.delete(0, 'end') # Empties the first name input field
+                                self.last_name_input.delete(0, 'end') # Empties the last name input field
+                                self.phone_input.delete(0, 'end') # Empties the phone input field
+                                self.delivery_entry.delete(0, 'end') # Empties the address input field
                                 for i in self.order_list.get_children(self.regular_pizza):
-                                        self.order_list.delete(i)
-                                        val.total_amount_regular = 0
+                                        self.order_list.delete(i) # Removes "i" items from the order list
+                                        val.total_amount_regular = 0 # Sets the total amount of regular pizza to 0
                                 for i in print_app.print_list.get_children(self.regular_pizza):
                                         print_app.print_list.delete(i)
                                 for i in self.order_list.get_children(self.gourmet_pizza):
-                                        self.order_list.delete(i)
-                                        val.total_amount_gourmet = 0
+                                        self.order_list.delete(i) # Removes "i" items from the order list
+                                        val.total_amount_gourmet = 0 # Sets the total amount of gourmet pizza to 0
                                 for i in print_app.print_list.get_children(self.gourmet_pizza):
-                                        print_app.print_list.delete(i)
-                                del val.print_list_reg[:]
-                                del val.print_list_gour[:]
-                                val.total_amount = val.total_amount_regular + val.total_amount_gourmet
-                        main_app.calc_total_cost()
-                        self.order_list.set(self.total_row, column="one", value=val.total_cost)
+                                        print_app.print_list.delete(i) # Removes "i" items form the receipt/print list
+                                del val.print_list_reg[:] # Empties the regular print list
+                                del val.print_list_gour[:] # Empties the gourmet print list
+                                val.total_amount = val.total_amount_regular + val.total_amount_gourmet # Calculates the total amount of pizzas
+                        main_app.calc_total_cost() # Calculates the total cost
+                        self.order_list.set(self.total_row, column="one", value=val.total_cost) # Sets the total cost display
                 
                 reset_button = Button(option_frame, text="Reset order", command=reset_entry)
                 reset_button.grid(column=2, row=1, ipadx=20, ipady=20, padx=(0,20), pady=(10,0), sticky="nesw")
@@ -397,13 +404,13 @@ class main_window(Frame):
                 exit_button = Button(option_frame, text="Exit program", command=root.destroy)
                 exit_button.grid(column=4, row=1, ipadx=15, ipady=20, padx=(0,20), pady=(10,0), sticky="nesw")
 
-                try:
+                try: # Opens the config.json file at launch
                         with open('config.json') as config:
                                 loaded_config = json.load(config)
                                 display_shop_name = loaded_config['shopname'] + "'s" + " " + "Pizza Shop"
                                 head_label['text'] = display_shop_name
                                 head_label['bg'] = loaded_config['headerbg']
-                except:
+                except: # Continue running if the file isn't found/returns an error
                         pass
 
 def Pass(self):
@@ -536,8 +543,8 @@ class configuration_window(Toplevel):
                 self.resizable(False, False)
                 self.iconbitmap('favicon.ico')
                 self.protocol("WM_DELETE_WINDOW", Pass)
-                self.withdraw()
                 self.widget()
+                self.withdraw()
 
         def widget(self, *args):
                 self.shop_name_label = Label(self, text="Shop's name:")
@@ -545,8 +552,8 @@ class configuration_window(Toplevel):
                 self.shop_name_entry = Entry(self)
                 self.shop_name_entry.grid(column=2, row=1, padx=(0,20), pady=(20,5), sticky="ew")
                 
-                def change_color(self):
-                        header_color = askcolor(self)
+                def change_color():
+                        header_color = askcolor()
                         main_app.head_label['bg'] = header_color[1]
 
                 self.color_button = Button(self, text="Change header color", command=change_color)
@@ -585,6 +592,10 @@ class var():
 
                 self.dp_check = IntVar()
                 self.dp_check.set(0)
+
+                # List of pizzas
+                self.init_reg_dict = [("Hawaiian Pizza", 8.50),("Steak & Bacon Pizza", 8.50),("Pepperoni Pizza", 8.50),("Cheese Pizza", 8.50),("Beef & Onion Pizza", 8.50),("Veggie Pizza", 8.50),("New Yorker Pizza", 8.50)]
+                self.init_gour_dict = [("Ramadan Halal Pizza", 13.50), ("Pineapple Only Pizza", 13.50), ("Crust Only Pizza", 13.50), ("Pizza that's been in a tomb for 1000 years", 13.50), ("Rice Pizza", 13.50)]
 
                 self.firstname = StringVar()
                 self.lastname = StringVar()
