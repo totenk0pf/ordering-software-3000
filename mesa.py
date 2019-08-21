@@ -8,9 +8,9 @@ class mainwindow(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
     # Window - create window that's non-resizable and titled 'Paradise Pizza' with size of 340 of width and 620 of height
-        root.geometry("340x620")
-        root.title("Paradise Pizza")
-        root.resizable(False, False)
+        self.master.geometry("340x620")
+        self.master.title("Paradise Pizza")
+        self.master.resizable(False, False)
         self.run()
 
     def run(self, *args):
@@ -74,12 +74,12 @@ class mainwindow(Frame):
                 self.delivery_address.grid()
                 self.delivery_entry.grid()
                 self.PickupCheck.deselect()
-                calctotalcost()
+                mainapp.calctotalcost()
             elif var.dp_check.get() == 0:
                 self.delivery_address.grid_remove()
                 self.delivery_entry.grid_remove()
                 self.delivery_check.deselect()
-                calctotalcost()
+                mainapp.calctotalcost()
                 
         #Checkbox for delivery/pick-up - trigger address input if picked delivery
         self.delivery_check = Checkbutton(root, text="Delivery", variable=var.dp_check, onvalue=1, offvalue=0, command=showaddress)
@@ -142,32 +142,66 @@ class mainwindow(Frame):
         self.cost_label = Label(text=self.tcost)
         self.cost_label.grid(column=2, row=15, pady=5)
 
-        #Calulate the pizza price
-        def calctotalcost():
-            self.tcost = 0
-            total_list = [(pset1.get()), (pset2.get()), (pset3.get()), (pset4.get()), (pset5.get())]
-            for pizza in total_list:
-                if pizza == "None":
-                    self.tcost += 0
-                elif pizza in common_pizza:
-                    self.tcost += 8.5
-                elif pizza in highclass_pizza:
-                    self.tcost += 13.5
-
-        if var.dp_check.get() == 1:
-            self.tcost += 3
-            self.cost_label.config(text=self.tcost)
-            receiptapp.printtcost.config(text=self.tcost)
-            self.tcost = 0
-
         def cal_on_click(self):
-            calctotalcost()
+            mainapp.calctotalcost()
 
         self.pick_pizza1.bind("<<ComboboxSelected>>", cal_on_click)
         self.pick_pizza2.bind("<<ComboboxSelected>>", cal_on_click)
         self.pick_pizza3.bind("<<ComboboxSelected>>", cal_on_click)
         self.pick_pizza4.bind("<<ComboboxSelected>>", cal_on_click)
         self.pick_pizza5.bind("<<ComboboxSelected>>", cal_on_click)
+
+        #Connect with the order button to get all the input    
+        def save_info():
+            mainapp.calctotalcost()
+            self.cusname_info = var.cusname.get()
+            self.cusnum_info = str(var.cusnum.get())
+            self.address_info = var.address.get()
+            print("Name: ", self.cusname_info,", Number: ", self.cusnum_info,", Address: ", self.address_info)
+
+            file = open("user.txt", "w")
+            file.write(self.cusname_info)
+            file.write(self.cusnum_info)
+            file.write(self.address_info)
+            file.close()
+            print(" Customer name ", self.cusname_info, "has been ordered successfully")
+            
+            #Validate input, make sure all infomation that required are filled
+            if (var.cusname.get() == "") or (var.cusnum.get() == "") or (var.dp_check.get() == 1 and var.address.get() == ""):
+                messagebox.showerror("Error","You must input all of the customer's information!")
+            else:
+            #Confirm that order to make sure they agree upon everything
+                confirm_ask = messagebox.askyesno("Confirm self.order", "Do you wish to confirm the order?")
+                if confirm_ask == True:
+                    receiptapp.display_name["text"] = self.cusname_info
+                    receiptapp.display_phone["text"] = self.cusnum_info
+                    if var.dp_check.get() == 1:
+                        receiptapp.display_address["text"] = self.address_info
+                    elif var.dp_check.get() == 0:
+                        #Clear-up everything after they finish the self.order which allow another self.order
+                        receiptapp.address_label.grid_remove()
+                        receiptapp.display_address.grid_remove()
+                    receiptapp.deiconify()
+                    self.name_info.delete(0, END)
+                    self.num_info.delete(0, END)
+                    self.delivery_entry.delete(0, END)
+                    receiptapp.print_pizza1['values'] = var.pizza_list
+                    receiptapp.print_pizza1.current(self.pick_pizza1.current())
+                    receiptapp.print_pizza2['values'] = var.pizza_list
+                    receiptapp.print_pizza2.current(self.pick_pizza2.current())
+                    receiptapp.print_pizza3['values'] = var.pizza_list
+                    receiptapp.print_pizza3.current(self.pick_pizza3.current())
+                    receiptapp.print_pizza4['values'] = var.pizza_list
+                    receiptapp.print_pizza4.current(self.pick_pizza4.current())
+                    receiptapp.print_pizza5['values'] = var.pizza_list
+                    receiptapp.print_pizza5.current(self.pick_pizza5.current())
+                    self.pick_pizza1.current(0)
+                    self.pick_pizza2.current(0)
+                    self.pick_pizza3.current(0)
+                    self.pick_pizza4.current(0)
+                    self.pick_pizza5.current(0)
+                    self.tcost = 0
+                    self.cost_label.config(text=self.tcost)
 
         #Order button for the front page
         self.order = Button(text="Order", command=save_info, bg="orange red")
@@ -176,6 +210,22 @@ class mainwindow(Frame):
         #Exit Button for the front page
         self.exit_but = Button(root, text="Exit", command=root.destroy, bg="silver")
         self.exit_but.grid(row=0, rowspan=5, column=3, sticky="ew", pady=5, padx=20, ipadx=15, ipady=3)
+
+        #Make function for cancel button on the 'Order' window
+        def cancel():
+            cancelask = messagebox.askyesno("Cancel order", "Do you wish to cancel the order?")
+            if cancelask == True:
+                #delete: name's input, number's input, delivery's input and every picked pizza
+                self.name_info.delete(0, END)
+                self.num_info.delete(0, END)
+                self.delivery_entry.delete(0, END)
+                self.pick_pizza1.current(0)
+                self.pick_pizza2.current(0)
+                self.pick_pizza3.current(0)
+                self.pick_pizza4.current(0)
+                self.pick_pizza5.current(0)
+                self.tcost = 0
+                self.cost_label.config(text=self.tcost)
 
         #Cancel Button for the front page
         self.cancel_but = Button(text="Cancel", command=cancel, bg="silver")
@@ -202,78 +252,23 @@ class mainwindow(Frame):
                 var.cusnum.set(var.cusnum.get()[:10])
                 self.delivery_entry.focus()
 
+    #Calulate the pizza price
+    def calctotalcost(self):
+        self.tcost = 0
+        total_list = [(var.pset1.get()), (var.pset2.get()), (var.pset3.get()), (var.pset4.get()), (var.pset5.get())]
+        for pizza in total_list:
+            if pizza == "None":
+                self.tcost += 0
+            elif pizza in var.common_pizza:
+                self.tcost += 8.5
+            elif pizza in var.highclass_pizza:
+                self.tcost += 13.5
 
-        #Confirmbutton on receipt window
-        def cancel_rorder():
-            receiptapp.destroy()
-
-        #Connect with the self.order button to get all the input    
-        def save_info():
-            calctotalcost()
-            cusself.name_info = var.cusname.get()
-            cusself.num_info = str(var.cusnum.get())
-            address_info = address.get()
-            print("Name: ", cusself.name_info,", Number: ", cusself.num_info,", Address: ", address_info)
-
-            file = open("user.txt", "w")
-            file.write(cusself.name_info)
-            file.write(cusself.num_info)
-            file.write(address_info)
-            file.close()
-            print(" Customer name ", cusself.name_info, "has been self.ordered successfully")
-
-        #Validate input, make sure all infomation that required are filled
-            if (var.cusname.get() == "") or (var.cusnum.get() == "") or (var.dp_check.get() == 1 and address.get() == ""):
-                messagebox.showerror("Error","You must input all of the customer's information!")
-            else:
-            #Confirm that self.order to make sure they agree upon everything
-                confirm_ask = messagebox.askyesno("Confirm self.order", "Do you wish to confirm the self.order?")
-                if confirm_ask == True:
-                    self.display_name["text"] = cusself.name_info
-                    self.display_phone["text"] = cusself.num_info
-                    if var.dp_check.get() == 1:
-                        self.display_address["text"] = address_info
-                    elif var.dp_check.get() == 0:
-                        #Clear-up everything after they finish the self.order which allow another self.order
-                        self.address_label.grid_remove()
-                        self.display_address.grid_remove()
-                    self.deiconify()
-                    self.name_info.delete(0, END)
-                    self.num_info.delete(0, END)
-                    self.delivery_entry.delete(0, END)
-                    self.print_pizza1['values'] = var.pizza_list
-                    self.print_pizza1.current(self.pick_pizza1.current())
-                    self.print_pizza2['values'] = var.pizza_list
-                    self.print_pizza2.current(self.pick_pizza2.current())
-                    self.print_pizza3['values'] = var.pizza_list
-                    self.print_pizza3.current(self.pick_pizza3.current())
-                    self.print_pizza4['values'] = var.pizza_list
-                    self.print_pizza4.current(self.pick_pizza4.current())
-                    self.print_pizza5['values'] = var.pizza_list
-                    self.print_pizza5.current(self.pick_pizza5.current())
-                    self.pick_pizza1.current(0)
-                    self.pick_pizza2.current(0)
-                    self.pick_pizza3.current(0)
-                    self.pick_pizza4.current(0)
-                    self.pick_pizza5.current(0)
-                    self.tcost = 0
-                    self.cost_label.config(text=self.tcost)
-
-        #Make function for cancel button on the 'Order' window
-        def cancel():
-            cancelask = messagebox.askyesno("Cancel order", "Do you wish to cancel the order?")
-            if cancelask == True:
-                #delete: name's input, number's input, delivery's input and every picked pizza
-                self.name_info.delete(0, END)
-                self.num_info.delete(0, END)
-                self.delivery_entry.delete(0, END)
-                self.pick_pizza1.current(0)
-                self.pick_pizza2.current(0)
-                self.pick_pizza3.current(0)
-                self.pick_pizza4.current(0)
-                self.pick_pizza5.current(0)
-                self.tcost = 0
-                self.cost_label.config(text=self.tcost)
+        if var.dp_check.get() == 1:
+            self.tcost += 3
+            self.cost_label.config(text=self.tcost)
+            receiptapp.printtcost.config(text=self.tcost)
+            self.tcost = 0
 
 root = Tk()
 
@@ -281,14 +276,13 @@ class receiptwindow(Toplevel):
     def __init__(self, master=None):
             Toplevel.__init__(self, master)
             #receipt's window structure
-            #self.master.geometry("")
-            self.master.resizable(False, False)
-            self.master.protocol("WM_DELETE_WINDOW", self.Pass)
-            self.master.withdraw()
             self.run()
+            self.resizable(False, False)
+            self.protocol("WM_DELETE_WINDOW", self.Pass)
+            self.withdraw()
 
     #Pass receipt window
-    def Pass():
+    def Pass(self):
         pass
 
     def run(self, *args):
@@ -314,29 +308,33 @@ class receiptwindow(Toplevel):
             self.print_pizza1 = ttk.Combobox(self, state="disabled")
             self.print_pizza1.grid(column=0, columnspan=3, row=5)
             self.print_pizza1['values'] = var.pizza_list
-            self.print_pizza1.current(self.pick_pizza1.current())
+            self.print_pizza1.current(mainapp.pick_pizza1.current())
             self.print_pizza2 = ttk.Combobox(self, state="disabled")
             self.print_pizza2.grid(column=0, columnspan=3, row=6)
             self.print_pizza2['values'] = var.pizza_list
-            self.print_pizza2.current(self.pick_pizza2.current())
+            self.print_pizza2.current(mainapp.pick_pizza2.current())
             self.print_pizza3 = ttk.Combobox(self, state="disabled")
             self.print_pizza3.grid(column=0, columnspan=3, row=7)
             self.print_pizza3['values'] = var.pizza_list
-            self.print_pizza3.current(self.pick_pizza3.current())
+            self.print_pizza3.current(mainapp.pick_pizza3.current())
             self.print_pizza4 = ttk.Combobox(self, state="disabled")
             self.print_pizza4.grid(column=0, columnspan=3, row=8)
             self.print_pizza4['values'] = var.pizza_list
-            self.print_pizza4.current(self.pick_pizza4.current())
+            self.print_pizza4.current(mainapp.pick_pizza4.current())
             self.print_pizza5 = ttk.Combobox(self, state="disabled")
             self.print_pizza5.grid(column=0, columnspan=3, row=9)
             self.print_pizza5['values'] = var.pizza_list
-            self.print_pizza5.current(self.pick_pizza5.current())
+            self.print_pizza5.current(mainapp.pick_pizza5.current())
 
             #Print the total cost
             self.print_cost_label = Label(self, text="Total cost:            $")
             self.print_cost_label.grid(column=1, row=10, pady=2)
             self.printtcost = Label(self, text="")
             self.printtcost.grid(column=2, row=10, pady=2)
+
+            #Confirmbutton on receipt window
+            def cancel_rorder():
+                receiptapp.destroy()
 
             #Confirmbutton on receipt window to exit and confirm the self.order
             self.confirmbutton = Button(self, text="Confirm", command=self.withdraw, bg="orange red")
