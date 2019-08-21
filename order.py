@@ -7,6 +7,8 @@
 # https://docs.python.org/3/library/tk.html - OFFICIAL DOCUMENTATION
 # https://python-textbok.readthedocs.io/en/latest/Introduction_to_GUI_Programming.html - PROGRAM STRUCTURE
 
+# https://www.vecteezy.com/vector-art/553406-pizza-slice-vector-icon - ICON USED IN THE PROGRAM (FREE FOR PERSONAL USE - ORIGINAL BY VECTEEZY)
+
 import os
 import json
 
@@ -235,7 +237,7 @@ class main_window(Frame):
                         load_info = askopenfilename(initialdir="C:/Users/Admin/Desktop",
                                                 filetypes =(("JSON File", "*.json"),("All Files","*.*")),
                                                 title = "Choose a file."
-                                                ) # Initializes a prompt asking for a JSON file.
+                                                ) # Initializes a prompt asking for a JSON file
                         try:
                                 with open(load_info,'r') as custInfo:
                                         loadcustList = json.load(custInfo) # Parses the chosen JSON file, and retrieves the embedded list
@@ -281,12 +283,12 @@ class main_window(Frame):
 
                 def save_file():
                         if len(self.first_name_input.get()) == 0 or len(self.last_name_input.get()) == 0 or len(self.phone_input.get()) == 0 or (len(val.address.get()) == 0 and val.dp_check.get() == 1):
-                                        messagebox.showerror("Error", "Please input all of the customer's information.")
+                                        messagebox.showerror("Error", "Please input all of the customer's information.") # Displays an error if an input field is left blank
                         else:
                                         saveInfo = asksaveasfilename(initialdir="C:/Users/Admin/Desktop",
                                                                 filetypes =(("JSON File", "*.json"),("All Files","*.*")),
                                                                 title = "Save a file."
-                                                                )
+                                                                ) # # Initializes a prompt asking for a directory to save the JSON file
                                         filename = saveInfo + ".json"
                                         custfirstname = self.first_name_input.get()
                                         custlastname = self.last_name_input.get()
